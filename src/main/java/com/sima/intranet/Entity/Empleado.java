@@ -67,22 +67,30 @@ public class Empleado {
     @Column(name = "codigoPostalEmpleado")
     private String codigoPostalEmpleado;
     
-    
+    //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
     ,fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private List<Indumentaria> indumentaria;
     
-     /*@OneToOne(mappedBy = "empleado", cascade = CascadeType.ALL)
+    //Credenciales Del Empleado
+    @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
+    ,fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
+    private List<Credencial> credencial;
+    
+    //Capacitacion Del Empleado
+    @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
+    ,fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
+    private List<Capacitacion> capacitacion;
+    
+    //Grilla Del Empleado    
+    @OneToOne(mappedBy = "empleado", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Operacion operacion;
     
-   public void agregarIdumentaria(Indumentaria laIndumentaria){
-    
-    if(laIndumentaria == null)  indumentaria = new ArrayList<>();
-    laIdumentaria.setCliente(this);
-    }
-    
-    @OneToMany(mappedBy="cliente",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
-    private List<Objetivo> objetivo;*/
-    
+    /*
+    @OneToOne(mappedBy="cliente",fetch = FetchType.LAZY)
+    private List<Objetivo> objetivo;
+    */
 }

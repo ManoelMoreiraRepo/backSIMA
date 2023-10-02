@@ -27,7 +27,7 @@ public class CapacitacionServiceImpl implements CapacitacionInterface{
     @Override
     public Capacitacion findCapacitacionByID(Long idCapacitacion) {
         
-        Capacitacion capacitacionEncontrada= rCapacitacion.getReferenceById(idCapacitacion);
+        Capacitacion capacitacionEncontrada= rCapacitacion.findById(idCapacitacion).get();
         return capacitacionEncontrada;
     }
 

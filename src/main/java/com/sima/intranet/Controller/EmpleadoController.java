@@ -3,8 +3,11 @@ package com.sima.intranet.Controller;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Service.EmpleadoServiceImpl;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,22 @@ public class EmpleadoController {
     @Autowired
     EmpleadoInterface iEmpleadoService;
 
+   @GetMapping("/traer")
+  public ResponseEntity<List<Empleado>> getAllEmpleados(@RequestParam(required = false) String nombre) {
+    List<Empleado> empleados = new ArrayList<Empleado>();
+
+    if (nombre == null)
+      iEmpleadoService.getEmpleados().forEach(empleados::add);
+    else
+      iEmpleadoService.findEmpleado(nombre).forEach(empleados::add);
+
+    if (empleados.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    return new ResponseEntity<>(empleados, HttpStatus.OK);
+  }
+     /*
     @GetMapping("/traer")
     public List<Empleado> getEmpleados() {
         return iEmpleadoService.getEmpleados();
@@ -53,5 +72,5 @@ public class EmpleadoController {
         this.iEmpleadoService.modifyEmpleado(empleado);
         return "El Empleado fue modificado correctamente";
     }
-
+*/
 }

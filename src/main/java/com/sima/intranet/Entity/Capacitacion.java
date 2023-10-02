@@ -38,6 +38,6 @@ public class Capacitacion {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="idEmpleado")
-    @JsonIgnoreProperties({"empleado","capacitacion","hibernateLazyInitializer","handler"})
+    @JsonIgnoreProperties({"empleado","capacitacion","indumentaria","hibernateLazyInitializer","handler"})
     private Empleado empleado;
 }

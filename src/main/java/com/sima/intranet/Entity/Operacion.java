@@ -1,7 +1,9 @@
 package com.sima.intranet.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,16 +21,17 @@ public class Operacion {
     private Long idOperacion;
 
     @Column
-    private Date fecahaInicioOperacion;
+    private Date fechaInicioOperacion;
 
     @Column
-    private Date FechaFinalOperacion;
+    private Date fechaFinalOperacion;
 
     @Column
     private String grillaOperacion;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idEmpleado")
+    @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private Empleado empleado;
 
 }

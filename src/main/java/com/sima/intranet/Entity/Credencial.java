@@ -22,6 +22,9 @@ public class Credencial {
     private Long idCredencial;
     
     @Column
+    private String NombreCredencial;
+    
+    @Column
     private String CodigoCredencial;
     
     @Column

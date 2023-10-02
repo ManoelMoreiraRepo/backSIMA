@@ -47,7 +47,7 @@ public class CapacitacionController {
         return iCapacitacion.modifyCapacitacion(capacitacion);
     }
 
-    @GetMapping("/detail/{idEmpleado}")
+    @GetMapping("/detail/{empleadoId}")
     public List<Capacitacion> findCapacitacionByIdEmpleado(@PathVariable("empleadoId") long id) {
         return iCapacitacion.listByIdEmpleado(id);
     }
