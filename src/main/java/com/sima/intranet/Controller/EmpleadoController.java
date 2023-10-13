@@ -24,7 +24,7 @@ public class EmpleadoController {
 
     @Autowired
     EmpleadoInterface iEmpleadoService;
-
+  /*
    @GetMapping("/traer")
   public ResponseEntity<List<Empleado>> getAllEmpleados(@RequestParam(required = false) String nombre) {
     List<Empleado> empleados = new ArrayList<Empleado>();
@@ -40,7 +40,13 @@ public class EmpleadoController {
 
     return new ResponseEntity<>(empleados, HttpStatus.OK);
   }
-     /*
+  */
+     @GetMapping("/detail/{id}")
+    public Empleado getEmpleado(@PathVariable long id) {
+        return iEmpleadoService.findEmpleado(id);
+    } 
+    
+  
     @GetMapping("/traer")
     public List<Empleado> getEmpleados() {
         return iEmpleadoService.getEmpleados();
@@ -62,15 +68,12 @@ public class EmpleadoController {
         iEmpleadoService.deleteEmpleado(id);
     }
 
-    @GetMapping("/detail/{id}")
-    public Empleado getEmpleado(@PathVariable long id) {
-        return iEmpleadoService.findEmpleado(id);
-    }
+   
 
     @PutMapping("/actualizar/{id}")
     public String updateEmpleado(@PathVariable("id") long id, @RequestBody Empleado empleado) {
         this.iEmpleadoService.modifyEmpleado(empleado);
         return "El Empleado fue modificado correctamente";
     }
-*/
+
 }

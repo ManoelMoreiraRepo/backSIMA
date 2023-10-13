@@ -87,6 +87,7 @@ public class Empleado {
     
     //Grilla Del Empleado    
     @OneToOne(mappedBy = "empleado", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+      @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private Operacion operacion;
     
     /*

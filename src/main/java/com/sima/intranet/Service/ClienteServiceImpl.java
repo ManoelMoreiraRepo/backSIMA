@@ -15,8 +15,8 @@ public class ClienteServiceImpl implements ClienteInterface {
     ClienteRepository iClienteRepository;
 
     @Override
-    public Iterable<Cliente> getAll() {
-        Iterable<Cliente> clientemostrar = iClienteRepository.findAll();
+    public List<Cliente> getAll() {
+        List<Cliente> clientemostrar = iClienteRepository.findAll();
         return clientemostrar;
     }
 
