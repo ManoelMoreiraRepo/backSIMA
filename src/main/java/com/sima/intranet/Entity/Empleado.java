@@ -10,14 +10,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
+
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-
+@NoArgsConstructor
 public class Empleado {
 
     @Id
@@ -53,7 +56,7 @@ public class Empleado {
     private String turnoEmpleado;
 
     @Column(name = "telefonoEmpleado")
-    private Long telefonoEmpleado;
+    private String telefonoEmpleado;
 
     @Column(name = "cargoEmpleado")
     private String cargoEmpleado;
@@ -94,4 +97,8 @@ public class Empleado {
     @OneToOne(mappedBy="cliente",fetch = FetchType.LAZY)
     private List<Objetivo> objetivo;
     */
+
+    public Empleado(String legajo){
+        this.legajoEmpleado = legajo;
+    }
 }

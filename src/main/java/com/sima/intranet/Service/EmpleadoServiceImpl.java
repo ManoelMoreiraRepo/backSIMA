@@ -57,7 +57,16 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         }
     }
 
-   
+    @Override
+    public Optional<Empleado> findByLegajo(String legajo) {
+        return iEmpleadoRepository.findByLegajoEmpleado(legajo);
+    }
+
+    @Override
+    public void saveAll(List<Empleado> lista) {
+        iEmpleadoRepository.saveAll(lista);
+    }
+
 
     @Override
     public Empleado findEmpleado(Long id) {
