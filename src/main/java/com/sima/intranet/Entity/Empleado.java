@@ -1,6 +1,7 @@
 package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sima.intranet.Enumarable.Empresas;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -69,6 +71,10 @@ public class Empleado {
 
     @Column(name = "codigoPostalEmpleado")
     private String codigoPostalEmpleado;
+
+    private BigDecimal sueldoTotal;
+
+    private Empresas tipoEmpresa;
     
     //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
