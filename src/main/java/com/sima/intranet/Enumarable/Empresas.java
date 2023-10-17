@@ -7,7 +7,7 @@ public enum Empresas {
     LA_BIZANTINA,
     GPS,
     GLOBAL,
-    Ecoklin;
+    ECOKLIN;
 
     Empresas(){
 
