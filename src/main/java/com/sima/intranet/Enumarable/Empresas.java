@@ -1,6 +1,5 @@
 package com.sima.intranet.Enumarable;
 
-import lombok.Data;
 
 import java.util.Optional;
 public enum Empresas {
