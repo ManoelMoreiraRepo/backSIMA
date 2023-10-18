@@ -1,7 +1,11 @@
 
 package com.sima.intranet.Entity;
 
+import lombok.Builder;
+import lombok.Data;
 
+@Builder
+@Data
 public class Mensaje {
     
     private String mensaje;

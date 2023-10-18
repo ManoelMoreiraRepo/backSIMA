@@ -1,6 +1,7 @@
 package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sima.intranet.Enumarable.Empresas;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,14 +11,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.util.ArrayList;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-
+@NoArgsConstructor
 public class Empleado {
 
     @Id
@@ -53,7 +58,7 @@ public class Empleado {
     private String turnoEmpleado;
 
     @Column(name = "telefonoEmpleado")
-    private Long telefonoEmpleado;
+    private String telefonoEmpleado;
 
     @Column(name = "cargoEmpleado")
     private String cargoEmpleado;
@@ -66,6 +71,10 @@ public class Empleado {
 
     @Column(name = "codigoPostalEmpleado")
     private String codigoPostalEmpleado;
+
+    private BigDecimal sueldoTotal;
+
+    private Empresas tipoEmpresa;
     
     //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
@@ -94,4 +103,8 @@ public class Empleado {
     @OneToOne(mappedBy="cliente",fetch = FetchType.LAZY)
     private List<Objetivo> objetivo;
     */
+
+    public Empleado(String legajo){
+        this.legajoEmpleado = legajo;
+    }
 }

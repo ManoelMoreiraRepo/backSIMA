@@ -1,9 +1,13 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.Empresas;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,12 +61,30 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         }
     }
 
-   
+    @Override
+    public Optional<Empleado> findByLegajo(String legajo) {
+        return iEmpleadoRepository.findByLegajoEmpleado(legajo);
+    }
+
+    @Override
+    public void saveAll(List<Empleado> lista) {
+        iEmpleadoRepository.saveAll(lista);
+    }
+
 
     @Override
     public Empleado findEmpleado(Long id) {
     Empleado empleado = iEmpleadoRepository.findById(id).get();
         return empleado;    
+    }
+    @Override
+    public List<Map<String,Object>> getCantidadNominaPorEmpresa(){
+       List<String[]> resultado = iEmpleadoRepository.countEmpleadoByTipoEmpresa();
+       List<Map<String,Object>> lista = new ArrayList<>();
+        for(String[]  dato  : resultado.stream().toList()){
+            lista.add(Map.of("cant" , dato[0] , "titulo" ,Empresas.valueOf(Optional.ofNullable(dato[1]).orElse("SIN_EMPRESA")).descripcion , "descrip" ,"NOMINA ACTIVA"));
+        }
+       return lista;
     }
 
 }

@@ -5,6 +5,8 @@ import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Service.EmpleadoServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,5 +77,11 @@ public class EmpleadoController {
         this.iEmpleadoService.modifyEmpleado(empleado);
         return "El Empleado fue modificado correctamente";
     }
+
+    @GetMapping("/cantidadNominaEmpresa")
+    public List<Map<String,Object>> getCantidadNominaPorEmpresa(){
+        return iEmpleadoService.getCantidadNominaPorEmpresa();
+    }
+
 
 }
