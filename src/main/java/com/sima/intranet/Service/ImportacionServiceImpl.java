@@ -163,11 +163,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     }
 
                 } catch (Exception e) {
-                    logger.error("Error parseando empleado con legajo : " + empleado.getLegajoEmpleado());
+                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                 }
             }
-            empleado.setTipoEmpresa(tipoEmpresa);
-            lista.add(empleado);
+            if(empleado!=null){
+                empleado.setTipoEmpresa(tipoEmpresa);
+                lista.add(empleado);
+            }
         }
         empledoService.saveAll(lista);
     }
@@ -217,12 +219,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     }
 
                 } catch (Exception e) {
-                    logger.error("Error parseando empleado con legajo : " + empleado.getLegajoEmpleado());
+                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                 }
             }
-            empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
-            empleado.setTipoEmpresa(tipoEmpresa);
-            lista.add(empleado);
+            if(empleado!=null){
+                empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
+                empleado.setTipoEmpresa(tipoEmpresa);
+                lista.add(empleado);
+            }
+
         }
         empledoService.saveAll(lista);
 
@@ -285,11 +290,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             //No me sirve el dato.
                     }
                 } catch (Exception e) {
-                    logger.error("Error parseando empleado con legajo : " + empleado.getLegajoEmpleado());
+                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                 }
             }
-            empleado.setTipoEmpresa(tipoEmpresa);
-            lista.add(empleado);
+            if(empleado!=null){
+                empleado.setTipoEmpresa(tipoEmpresa);
+                lista.add(empleado);
+            }
         }
         empledoService.saveAll(lista);
     }
@@ -340,11 +347,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             //No me sirve el dato.
                     }
                 } catch (Exception e) {
-                    logger.error("Error parseando empleado con legajo : " + empleado.getLegajoEmpleado());
+                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                 }
             }
-            empleado.setTipoEmpresa(tipoEmpresa);
-            lista.add(empleado);
+            if(empleado!=null){
+                empleado.setTipoEmpresa(tipoEmpresa);
+                lista.add(empleado);
+            }
+
         }
         empledoService.saveAll(lista);
     }
