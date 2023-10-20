@@ -104,7 +104,7 @@ public class Empleado {
     private List<Objetivo> objetivo;
     */
 
-    public Empleado(String legajo){
-        this.legajoEmpleado = legajo;
+    public Empleado(String dni){
+        this.DNIEmpleado = dni;
     }
 }

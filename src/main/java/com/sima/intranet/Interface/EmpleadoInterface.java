@@ -21,6 +21,8 @@ public interface EmpleadoInterface {
 
     Optional<Empleado> findByLegajo(String legajo);
 
+    Optional<Empleado> findByDNI(String dni);
+
 
     void saveAll(List<Empleado> lista);
 

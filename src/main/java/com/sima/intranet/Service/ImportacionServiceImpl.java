@@ -1,7 +1,6 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Empleado;
-import com.sima.intranet.Enumarable.Empresas;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Interface.ImportacionInterface;
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "liq_FVenc", "liq_FDes", "liq_fHas", "liq_OSo", "liq_porad", "liq_sin", "liq_afjp", "liq_tme", "liq_sinies", "liq_obs"
     );
 
-    public static final List<String> FORMATO_GLOBAL_LEGAJO_NOMINA = List.of(
+   /* public static final List<String> FORMATO_GLOBAL_LEGAJO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
             "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
             "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
@@ -43,14 +42,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
             "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "Zona de pago",
             "Supervisor", "C.U.I.L.", "Obra social"
-    );
+    );*/
 
-    public static final List<String> FORMATO_GLOBAL_SUELDO_NOMINA = List.of(
+    public static final List<String> FORMATO_SUELDO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "C.U.I.L.", "Sucursal", "Sección", "Objetivo",
             "Zona de pago", "Supervisor", "Ingreso", "Baja", "Banco"
     );
 
-    public static final List<String> FORMATO_GROUP_LEGAJO_NOMINA = List.of(
+    /*public static final List<String> FORMATO_GROUP_LEGAJO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
             "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
             "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
@@ -59,11 +58,22 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "C.U.I.L.",
             "Modalidad de contratación", "Situación", "Condición", "Actividad", "CCT",
             "Seguro de vida", "Obra social"
+    );*/
+
+    public static final List<String> FORMATO_LEGAJO_NOMINA = List.of(
+            "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
+            "Entre calle, y calle", "Barrio", "Localidad", "Partido", "Provincia",
+            "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
+            "Lugar de nacimiento", "Edad", "Sexo", "Estado civil", "Nacionalidad",
+            "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
+            "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "Zona de pago",
+            "Supervisor", "C.U.I.L.", "Modalidad de contratación", "Situación", "Condición",
+            "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social"
     );
 
 
     @Async
-    public void procesarImportacionNomina(String ruta, Empresas tipoEmpresa) {
+    public void procesarImportacionNomina(String ruta) {
         try {
             FileInputStream excelFile = new FileInputStream(ruta);
             Workbook workbook = new XSSFWorkbook(excelFile);
@@ -78,16 +88,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             System.out.println(cabezera);
             if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
                 logger.info("Actualiacion de FORMATO BEGERMAN iniciada.");
-                insertarFormatoBejerman(sheet, tipoEmpresa);
-            } else if (FORMATO_GLOBAL_LEGAJO_NOMINA.containsAll(cabezera)) {
-                logger.info("Actualiacion de GLOBAL_LEGAJO iniciada.");
-                insertarFormatoGlobalLegajo(sheet, tipoEmpresa);
-            } else if (cabezera.containsAll(FORMATO_GLOBAL_SUELDO_NOMINA)) {
+                insertarFormatoBejerman(sheet);
+            } else if (cabezera.containsAll(FORMATO_SUELDO_NOMINA)) {
                 logger.info("Actualiacion de GLOBAL_SUELDO o GROUP SUELDO iniciada.");
-                insertarFormatoGlobalSueldo(sheet, tipoEmpresa);
-            } else if (FORMATO_GROUP_LEGAJO_NOMINA.containsAll(cabezera)) {
-                logger.info("Actualiacion de Group Legajo iniciada.");
-                insertarFormatoGroupLegajo(sheet, tipoEmpresa);
+                insertarFormatoSueldo(sheet);
+            } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO LEGAJO");
+                insertarFormatoLegajo(sheet);
+            } else{
+                logger.info("El formato de este excel no esta implementado.");
             }
             workbook.close();
             excelFile.close();
@@ -98,7 +107,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
-    private void insertarFormatoGroupLegajo(Sheet sheet, Empresas tipoEmpresa) {
+  /*  private void insertarFormatoGroupLegajo(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
@@ -167,22 +176,26 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
             }
             if(empleado!=null){
-                empleado.setTipoEmpresa(tipoEmpresa);
                 lista.add(empleado);
             }
         }
         empledoService.saveAll(lista);
     }
+*/
 
-
-    private void insertarFormatoGlobalSueldo(Sheet sheet, Empresas tipoEmpresa) {
+    private void insertarFormatoSueldo(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() >= 0 && row.getRowNum() <= 3) {
                 continue;
             }
-            Empleado empleado = null;
             Double sueldoTotal = Double.valueOf(0);
+            Cell celdaDni = row.getCell(3);
+            String dni = celdaDni.getStringCellValue().substring(3, 11);
+            if(dni.isEmpty()){
+                continue;
+            }
+            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
             for (Cell cell : row) {
 
                 try {
@@ -199,6 +212,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                                 break;
                             case 3:
                                 empleado.setDNIEmpleado(cell.getStringCellValue().substring(3, 11));
+                                break;
+                            case 4:
+
                                 break;
                             case 9:
                                 empleado.setFechaAltaEmpleado(cell.getDateCellValue());
@@ -224,7 +240,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             if(empleado!=null){
                 empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
-                empleado.setTipoEmpresa(tipoEmpresa);
                 lista.add(empleado);
             }
 
@@ -233,20 +248,26 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
-    private void insertarFormatoGlobalLegajo(Sheet sheet, Empresas tipoEmpresa) {
+    private void insertarFormatoLegajo(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Empleado empleado = null;
+            Cell celdaDni = row.getCell(24);
+            celdaDni.setCellType(CellType.STRING);
+            String dni = celdaDni.getStringCellValue();
+            if(dni.isEmpty()){
+                continue;
+            }
+            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
 
             for (Cell cell : row) {
 
                 try {
                     switch (cell.getColumnIndex()) {
                         case 0:
-                            empleado = empledoService.findByLegajo(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())).orElse(new Empleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())));
+                            empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
                             break;
                         case 1:
                             empleado.setApellidoEmpleado(cell.getStringCellValue());
@@ -294,27 +315,31 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
             }
             if(empleado!=null){
-                empleado.setTipoEmpresa(tipoEmpresa);
                 lista.add(empleado);
             }
         }
         empledoService.saveAll(lista);
     }
 
-    private void insertarFormatoBejerman(Sheet sheet, Empresas tipoEmpresa) {
+    private void insertarFormatoBejerman(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Empleado empleado = null;
+            Cell celdaDni = row.getCell(24);
+            celdaDni.setCellType(CellType.STRING);
+            String dni = celdaDni.getStringCellValue();
+            if(dni.isEmpty()){
+                continue;
+            }
+            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
 
             for (Cell cell : row) {
-
                 try {
                     switch (cell.getColumnIndex()) {
                         case 0:
-                            empleado = empledoService.findByLegajo(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())).orElse(new Empleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())));
+                            empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
                             break;
                         case 1:
                             empleado.setNombreEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 1));
@@ -351,7 +376,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
             }
             if(empleado!=null){
-                empleado.setTipoEmpresa(tipoEmpresa);
                 lista.add(empleado);
             }
 

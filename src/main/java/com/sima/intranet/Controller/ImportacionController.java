@@ -25,15 +25,11 @@ public class ImportacionController {
     private ImportacionInterface importador;
 
     @PostMapping("/nomina")
-    public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file , @RequestParam Integer empresa) {
-        if (file.isEmpty() || empresa == null) {
-            return ResponseEntity.badRequest().body("Es necesario el archivo y la empresa seleccionada");
+    public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("No se puedo recibir el archivo.");
         }
 
-        Optional<Empresas> tipoEmpresa = Empresas.get(empresa);
-        if(!tipoEmpresa.isPresent()){
-            return ResponseEntity.badRequest().body("Empresa no valida.");
-        }
 
         try {
             String originalFileName = file.getOriginalFilename();
@@ -49,9 +45,9 @@ public class ImportacionController {
 
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            importador.procesarImportacionNomina(String.valueOf(targetPath) , tipoEmpresa.get());
+            importador.procesarImportacionNomina(String.valueOf(targetPath));
 
-            return ResponseEntity.ok("Archivo CSV cargado con éxito.");
+            return ResponseEntity.ok("Archivo cargado con éxito.");
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error al cargar el archivo: " + e.getMessage());
         }

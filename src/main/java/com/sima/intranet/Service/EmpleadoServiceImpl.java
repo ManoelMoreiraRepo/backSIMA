@@ -67,6 +67,11 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
     }
 
     @Override
+    public Optional<Empleado> findByDNI(String dni) {
+        return iEmpleadoRepository.findByDNIEmpleado(dni);
+    }
+
+    @Override
     public void saveAll(List<Empleado> lista) {
         iEmpleadoRepository.saveAll(lista);
     }
