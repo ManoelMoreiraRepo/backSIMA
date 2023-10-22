@@ -2,6 +2,7 @@ package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Empresas;
+import com.sima.intranet.Enumarable.Gerencias;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
 
@@ -83,11 +84,18 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         return empleado;    
     }
     @Override
-    public List<Map<String,Object>> getCantidadNominaPorEmpresa(){
-       List<String[]> resultado = iEmpleadoRepository.countEmpleadoByTipoEmpresa();
+    public List<Map<String,Object>> getCantidadNominaPorGerencia(){
+       List<String[]> resultado = iEmpleadoRepository.countEmpleadoByGerencia();
        List<Map<String,Object>> lista = new ArrayList<>();
         for(String[]  dato  : resultado.stream().toList()){
-            lista.add(Map.of("cant" , dato[0] , "titulo" ,Empresas.valueOf(Optional.ofNullable(dato[1]).orElse("SIN_EMPRESA")).descripcion , "descrip" ,"NOMINA ACTIVA"));
+            Gerencias gerencia = Gerencias.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            String descripcion = "SIN GERENCIA";
+            String titulo = "SIN TITULO";
+            if(gerencia != null){
+                descripcion = String.format("%s   NOMINA ACTIVA" , gerencia.codigo);
+                titulo = gerencia.descrip;
+            }
+            lista.add(Map.of("cant" , dato[0] , "titulo" , titulo , "descrip" ,descripcion));
         }
        return lista;
     }

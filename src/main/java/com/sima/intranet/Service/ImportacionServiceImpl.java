@@ -1,6 +1,7 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.Gerencias;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Interface.ImportacionInterface;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -62,7 +64,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_LEGAJO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
-            "Entre calle, y calle", "Barrio", "Localidad", "Partido", "Provincia",
+            "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
             "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
             "Lugar de nacimiento", "Edad", "Sexo", "Estado civil", "Nacionalidad",
             "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
@@ -71,7 +73,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social"
     );
 
-
+    /**
+     * Metodo asincrono que determina cual formato se esta intentando actualizar.
+     * @param ruta
+     */
     @Async
     public void procesarImportacionNomina(String ruta) {
         try {
@@ -90,7 +95,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 logger.info("Actualiacion de FORMATO BEGERMAN iniciada.");
                 insertarFormatoBejerman(sheet);
             } else if (cabezera.containsAll(FORMATO_SUELDO_NOMINA)) {
-                logger.info("Actualiacion de GLOBAL_SUELDO o GROUP SUELDO iniciada.");
+                logger.info("Actualiacion de SUELDO.");
                 insertarFormatoSueldo(sheet);
             } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO LEGAJO");
@@ -183,6 +188,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     }
 */
 
+    /**
+     * Realiza la insercion de dato suelto total para los empleado que ya encuentran en la base de datos.
+     * @param sheet
+     */
     private void insertarFormatoSueldo(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
@@ -195,68 +204,45 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(dni.isEmpty()){
                 continue;
             }
-            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
-            for (Cell cell : row) {
-
-                try {
-                    if (cell.getColumnIndex() < 12) {
-                        switch (cell.getColumnIndex()) {
-                            case 0:
-                                empleado = empledoService.findByLegajo(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())).orElse(new Empleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())));
-                                break;
-                            case 1:
-                                empleado.setApellidoEmpleado(cell.getStringCellValue());
-                                break;
-                            case 2:
-                                empleado.setNombreEmpleado(cell.getStringCellValue());
-                                break;
-                            case 3:
-                                empleado.setDNIEmpleado(cell.getStringCellValue().substring(3, 11));
-                                break;
-                            case 4:
-
-                                break;
-                            case 9:
-                                empleado.setFechaAltaEmpleado(cell.getDateCellValue());
-                                break;
-                            case 6:
-                                empleado.setObjetivoEmpleado(cell.getStringCellValue());
-                                break;
-                            default:
-                                //No me sirve el dato.
+            Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
+            if(empleadoOpt.isPresent()){
+                Empleado empleado = empleadoOpt.get();
+                for (Cell cell : row) {
+                    try {
+                        if (cell.getColumnIndex() > 11) {
+                            try {
+                                sueldoTotal += cell.getNumericCellValue();
+                            } catch (Exception e) {
+                                logger.error("Dato invalido para sumar al sueldo total");
+                            }
                         }
-                    } else {
-                        try {
-                            sueldoTotal += cell.getNumericCellValue();
-                        } catch (Exception e) {
-                            logger.error("Dato invalido para sumar al sueldo total");
-                        }
-
+                    } catch (Exception e) {
+                        logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                     }
-
-                } catch (Exception e) {
-                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
+                }
+                if(empleado!=null){
+                    empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
+                    lista.add(empleado);
                 }
             }
-            if(empleado!=null){
-                empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
-                lista.add(empleado);
-            }
-
         }
         empledoService.saveAll(lista);
 
     }
 
+    /**
+     * Inserta toda la informacion basica del empleado.
+     * @param sheet
+     */
     private void insertarFormatoLegajo(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Cell celdaDni = row.getCell(24);
+            Cell celdaDni = row.getCell(23);
             celdaDni.setCellType(CellType.STRING);
-            String dni = celdaDni.getStringCellValue();
+            String dni = getUltimos8Digitos(celdaDni.getStringCellValue());
             if(dni.isEmpty()){
                 continue;
             }
@@ -289,14 +275,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             cell.setCellType(CellType.STRING);
                             empleado.setTelefonoEmpleado(String.valueOf(cell.getStringCellValue()));
                             break;
+                        case 16:
+                            empleado.setEmailEmpleado(cell.getStringCellValue());
+                            break;
                         case 17:
                             empleado.setFechaNascimentoEmpleado(cell.getDateCellValue());
-                            break;
-                        case 23:
-                            cell.setCellType(CellType.STRING);
-                            if (cell.getStringCellValue() != null) {
-                                empleado.setDNIEmpleado(cell.getStringCellValue());
-                            }
                             break;
                         case 24:
                             empleado.setFechaAltaEmpleado(cell.getDateCellValue());
@@ -306,6 +289,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             break;
                         case 30:
                             empleado.setObjetivoEmpleado(cell.getStringCellValue());
+                            break;
+                        case 32:
+                            Gerencias g = Gerencias.getGerencia(cell.getStringCellValue());
+                            if(g!=null){
+                                empleado.setGerencia(g);
+                            }
+                            break;
+                        case 35:
+                            empleado.setEstadoEmpleado(cell.getStringCellValue());
                             break;
                         default:
                             //No me sirve el dato.
@@ -436,5 +428,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         Row headerRow = sheet.getRow(0);
         Cell headerCell = headerRow.getCell(columnIndex);
         return getCellValueAsString(headerCell);
+    }
+
+    private static String getUltimos8Digitos(String cadena){
+        cadena = cadena.replaceAll("\\s", "");
+        if (cadena.length() >= 8) {
+            return cadena.substring(cadena.length() - 8);
+        } else {
+            return "";
+        }
     }
 }

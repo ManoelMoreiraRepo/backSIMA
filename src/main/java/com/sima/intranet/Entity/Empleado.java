@@ -2,6 +2,7 @@ package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sima.intranet.Enumarable.Empresas;
+import com.sima.intranet.Enumarable.Gerencias;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +17,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -74,7 +74,9 @@ public class Empleado {
 
     private BigDecimal sueldoTotal;
 
-    private Empresas tipoEmpresa;
+    private Empresas empresa;
+
+    private Gerencias gerencia;
     
     //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
