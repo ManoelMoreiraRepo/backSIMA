@@ -1,7 +1,11 @@
 package com.sima.intranet.Service;
 
+import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Entity.Empleado;
-import com.sima.intranet.Enumarable.Gerencias;
+import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Enumarable.Sindicato;
+import com.sima.intranet.Enumarable.TipoCredencial;
+import com.sima.intranet.Interface.CredencialInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Interface.ImportacionInterface;
 import org.slf4j.Logger;
@@ -16,7 +20,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -25,6 +28,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     @Autowired
     private EmpleadoInterface empledoService;
+    @Autowired
+    private CredencialInterface credencialService;
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
@@ -36,41 +41,21 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "liq_FVenc", "liq_FDes", "liq_fHas", "liq_OSo", "liq_porad", "liq_sin", "liq_afjp", "liq_tme", "liq_sinies", "liq_obs"
     );
 
-   /* public static final List<String> FORMATO_GLOBAL_LEGAJO_NOMINA = List.of(
-            "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
-            "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
-            "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
-            "Lugar de nacimiento", "Edad", "Sexo", "Estado civil", "Nacionalidad",
-            "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
-            "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "Zona de pago",
-            "Supervisor", "C.U.I.L.", "Obra social"
-    );*/
 
     public static final List<String> FORMATO_SUELDO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "C.U.I.L.", "Sucursal", "Sección", "Objetivo",
             "Zona de pago", "Supervisor", "Ingreso", "Baja", "Banco"
     );
 
-    /*public static final List<String> FORMATO_GROUP_LEGAJO_NOMINA = List.of(
-            "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
-            "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
-            "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
-            "Lugar de nacimiento", "Edad", "Sexo", "Estado civil", "Nacionalidad",
-            "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
-            "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "C.U.I.L.",
-            "Modalidad de contratación", "Situación", "Condición", "Actividad", "CCT",
-            "Seguro de vida", "Obra social"
-    );*/
-
     public static final List<String> FORMATO_LEGAJO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "Calle", "Número", "Piso", "Departamento",
-            "Entre calle", "y calle", "Barrio", "Localidad", "Partido", "Provincia",
-            "Código postal", "Teléfono", "Celular", "eMail", "Fecha de nacimiento",
-            "Lugar de nacimiento", "Edad", "Sexo", "Estado civil", "Nacionalidad",
-            "Documento de identidad", "Fecha de ingreso", "Ingreso anterior 1",
-            "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo", "Zona de pago",
-            "Supervisor", "C.U.I.L.", "Modalidad de contratación", "Situación", "Condición",
-            "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social"
+            "Entre calle","y calle", "Barrio", "Localidad", "Partido", "Provincia", "Código postal",
+            "Teléfono", "Celular", "eMail", "Fecha de nacimiento", "Lugar de nacimiento", "Edad",
+            "Sexo", "Estado civil", "Nacionalidad", "Documento de identidad", "Fecha de ingreso",
+            "Ingreso anterior 1", "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo",
+            "Zona de pago", "C.U.I.L.", "Modalidad de contratación", "Situación", "Condición",
+            "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social", "DNI",
+            "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO", "Tipo Credencial", "Fecha Credencial"
     );
 
     /**
@@ -91,6 +76,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 cabezera.add(cell.getStringCellValue());
             }
             System.out.println(cabezera);
+
+
             if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
                 logger.info("Actualiacion de FORMATO BEGERMAN iniciada.");
                 insertarFormatoBejerman(sheet);
@@ -101,7 +88,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 logger.info("Actualiacion de FORMATO LEGAJO");
                 insertarFormatoLegajo(sheet);
             } else{
+                cabezera.removeIf((dato) -> FORMATO_LEGAJO_NOMINA.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
+                System.out.println("Cabezeras no reconocidas");
+                System.out.println(cabezera);
             }
             workbook.close();
             excelFile.close();
@@ -189,7 +179,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 */
 
     /**
-     * Realiza la insercion de dato suelto total para los empleado que ya encuentran en la base de datos.
+     * Realiza la insercion de dato sueldo total para los empleado que ya encuentran en la base de datos.
      * @param sheet
      */
     private void insertarFormatoSueldo(Sheet sheet) {
@@ -235,19 +225,24 @@ public class ImportacionServiceImpl implements ImportacionInterface {
      * @param sheet
      */
     private void insertarFormatoLegajo(Sheet sheet) {
-        List<Empleado> lista = new ArrayList<>();
+        List<Empleado> listaEmpleados = new ArrayList<>();
+        List<Credencial> listaCredenciales = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Cell celdaDni = row.getCell(23);
+            Cell celdaDni = row.getCell(41);
             celdaDni.setCellType(CellType.STRING);
+/*
             String dni = getUltimos8Digitos(celdaDni.getStringCellValue());
+*/
+            String dni = celdaDni.getStringCellValue().trim();
             if(dni.isEmpty()){
                 continue;
             }
             Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
-
+            Gerencia gerencia = null;
+            Credencial nuevaCredencial = null;
             for (Cell cell : row) {
 
                 try {
@@ -262,6 +257,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             empleado.setNombreEmpleado(cell.getStringCellValue());
                             break;
                         case 3:
+                            cell.setCellType(CellType.STRING);
                             empleado.setDireccionEmpleado(cell.getStringCellValue());
                             break;
                         case 4:
@@ -290,15 +286,42 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         case 30:
                             empleado.setObjetivoEmpleado(cell.getStringCellValue());
                             break;
-                        case 32:
-                            Gerencias g = Gerencias.getGerencia(cell.getStringCellValue());
-                            if(g!=null){
-                                empleado.setGerencia(g);
-                            }
-                            break;
                         case 35:
                             empleado.setEstadoEmpleado(cell.getStringCellValue());
                             break;
+                        case 42:
+                            gerencia = Gerencia.getGerencia(cell.getStringCellValue());
+                            if(gerencia!=null){
+                                empleado.setGerencia(gerencia);
+                            }
+                            break;
+                        case 45:
+                            Sindicato s = null;
+                            try {
+                                s = Sindicato.valueOf(cell.getStringCellValue());
+                            }catch (IllegalArgumentException e){
+                                logger.info("Sindicato no reconocido : " + cell.getStringCellValue());
+                            }
+                            if(s!=null ){
+                                empleado.setSindicato(s);
+                            }
+
+                            break;
+                        case 46:
+                            TipoCredencial tipoCred = TipoCredencial.getTipoCredencial(cell.getStringCellValue());
+                            Date fechaCred = row.getCell(47).getDateCellValue();
+
+                            if(tipoCred!=null && fechaCred!=null && gerencia!=null){
+
+                                if(empleado.getCredencial() == null || empleado.getCredencial().isEmpty()){
+                                    empleado.setCredencial(new ArrayList<>());
+                                }
+                                nuevaCredencial = new Credencial(empleado , fechaCred , tipoCred , gerencia);
+                            }else{
+                                logger.info("fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() + ".Datos Insuficientes para crear la credencial.");
+                            }
+                            break;
+
                         default:
                             //No me sirve el dato.
                     }
@@ -307,10 +330,16 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
             }
             if(empleado!=null){
-                lista.add(empleado);
+                listaEmpleados.add(empleado);
             }
+            if(nuevaCredencial!=null){
+                empleado.getCredencial().add(nuevaCredencial);
+                listaCredenciales.add(nuevaCredencial);
+            }
+
         }
-        empledoService.saveAll(lista);
+        empledoService.saveAll(listaEmpleados);
+        credencialService.saveAll(listaCredenciales);
     }
 
     private void insertarFormatoBejerman(Sheet sheet) {

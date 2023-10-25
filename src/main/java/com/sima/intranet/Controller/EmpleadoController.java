@@ -80,5 +80,10 @@ public class EmpleadoController {
         return iEmpleadoService.getCantidadNominaPorGerencia();
     }
 
+    @GetMapping("/cantidadNominaSindicato")
+    public List<Map<String,Object>> getCantidadNominaPorSindicato(){
+        return iEmpleadoService.getCantidadNominaPorSindicado();
+    }
+
 
 }

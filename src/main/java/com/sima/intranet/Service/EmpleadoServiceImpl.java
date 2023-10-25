@@ -1,8 +1,8 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Empleado;
-import com.sima.intranet.Enumarable.Empresas;
-import com.sima.intranet.Enumarable.Gerencias;
+import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Enumarable.Sindicato;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
 
@@ -88,7 +88,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
        List<String[]> resultado = iEmpleadoRepository.countEmpleadoByGerencia();
        List<Map<String,Object>> lista = new ArrayList<>();
         for(String[]  dato  : resultado.stream().toList()){
-            Gerencias gerencia = Gerencias.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            Gerencia gerencia = Gerencia.valueOf(Optional.ofNullable(dato[1]).orElse(""));
             String descripcion = "SIN GERENCIA";
             String titulo = "SIN TITULO";
             if(gerencia != null){
@@ -98,6 +98,25 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
             lista.add(Map.of("cant" , dato[0] , "titulo" , titulo , "descrip" ,descripcion));
         }
        return lista;
+    }
+
+    @Override
+    public List<Map<String,Object>> getCantidadNominaPorSindicado(){
+        List<String[]> resultado = iEmpleadoRepository.countEmpleadoBySindicato();
+        List<Map<String,Object>> lista = new ArrayList<>();
+        for(String[]  dato  : resultado.stream().toList()){
+            Sindicato sindicato = null;
+            if(Optional.ofNullable(dato[1]).isPresent()){
+                sindicato = Sindicato.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            }
+            String descripcion = "NOMINA ACTIVA";
+            String titulo = "SIN SINDICATO";
+            if(sindicato != null){
+                titulo = sindicato.name();
+            }
+            lista.add(Map.of("cant" , dato[0] , "titulo" , titulo , "descrip" ,descripcion));
+        }
+        return lista;
     }
 
 }

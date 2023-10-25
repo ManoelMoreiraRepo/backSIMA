@@ -1,8 +1,9 @@
 package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sima.intranet.Enumarable.Empresas;
-import com.sima.intranet.Enumarable.Gerencias;
+import com.sima.intranet.Enumarable.Empresa;
+import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Enumarable.Sindicato;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,9 +75,11 @@ public class Empleado {
 
     private BigDecimal sueldoTotal;
 
-    private Empresas empresa;
+    private Empresa empresa;
 
-    private Gerencias gerencia;
+    private Gerencia gerencia;
+
+    private Sindicato sindicato;
     
     //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
@@ -86,7 +89,7 @@ public class Empleado {
     
     //Credenciales Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
-    ,fetch = FetchType.LAZY)
+    ,fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private List<Credencial> credencial;
     

@@ -27,4 +27,6 @@ public interface EmpleadoInterface {
     void saveAll(List<Empleado> lista);
 
     List<Map<String,Object>> getCantidadNominaPorGerencia();
+
+    List<Map<String,Object>> getCantidadNominaPorSindicado();
 }

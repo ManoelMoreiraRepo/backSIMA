@@ -19,4 +19,7 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Long>{
 
      @Query("SELECT COUNT(e) , e.gerencia FROM Empleado e GROUP BY e.gerencia")
      List<String[]> countEmpleadoByGerencia();
+
+     @Query("SELECT COUNT(e) , e.sindicato FROM Empleado e GROUP BY e.sindicato")
+     List<String[]> countEmpleadoBySindicato();
 }

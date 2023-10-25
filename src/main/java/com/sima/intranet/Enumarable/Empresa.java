@@ -2,7 +2,7 @@ package com.sima.intranet.Enumarable;
 
 
 import java.util.Optional;
-public enum Empresas {
+public enum Empresa {
     GRUPO_SIMA("GRUPO SIMA"),
     LA_BIZANTINA("LA BIZANTINA"),
     GPS("GPS"),
@@ -11,12 +11,12 @@ public enum Empresas {
     SIN_EMPRESA( "SIN EMPRESA");
 
     public String descripcion;
-    Empresas(String descripcion){
+    Empresa(String descripcion){
         this.descripcion = descripcion;
     }
 
-    public static Optional<Empresas> get(int ordinal){
-        for(Empresas e : Empresas.values()){
+    public static Optional<Empresa> get(int ordinal){
+        for(Empresa e : Empresa.values()){
             if(e.ordinal() == ordinal){
                 return  Optional.of(e);
             }

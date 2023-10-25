@@ -57,4 +57,9 @@ public class CredencialServiceImpl implements CredencialInterface {
         return this.rCredencial.listByIdCredencial(idEmpleado);
     }
 
+    @Override
+    public void saveAll(List<Credencial> listaCredenciales) {
+        this.rCredencial.saveAll(listaCredenciales);
+    }
+
 }
