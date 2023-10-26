@@ -16,4 +16,6 @@ public interface CredencialInterface {
     Boolean deleteCredencial(Long idCredencial);
 
     List<Credencial> listByIdEmpleado(Long idEmpleado);
+
+    void saveAll(List<Credencial> listaCredenciales);
 }

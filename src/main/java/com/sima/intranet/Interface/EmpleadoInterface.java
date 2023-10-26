@@ -21,8 +21,12 @@ public interface EmpleadoInterface {
 
     Optional<Empleado> findByLegajo(String legajo);
 
+    Optional<Empleado> findByDNI(String dni);
+
 
     void saveAll(List<Empleado> lista);
 
-    List<Map<String,Object>> getCantidadNominaPorEmpresa();
+    List<Map<String,Object>> getCantidadNominaPorGerencia();
+
+    List<Map<String,Object>> getCantidadNominaPorSindicado();
 }
