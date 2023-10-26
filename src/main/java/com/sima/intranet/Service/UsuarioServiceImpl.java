@@ -41,7 +41,7 @@ public class UsuarioServiceImpl implements UsuarioInterface {
     }
 
     @Override
-    public Boolean deleteUser(int idUsuario) {
+    public Boolean deleteUser(Long idUsuario) {
         this.rusuario.deleteById(idUsuario);
         return true;
     }

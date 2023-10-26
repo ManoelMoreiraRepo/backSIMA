@@ -48,7 +48,7 @@ public class UsuarioController {
     }
     
     @DeleteMapping(value = "/borrar/{id}")
-    public Boolean deleteUsuario(@PathVariable(value="id") int id){
+    public Boolean deleteUsuario(@PathVariable(value="id") Long id){
     return this.iusuario.deleteUser(id);
     }
 

@@ -10,5 +10,5 @@ import com.sima.intranet.Entity.Usuario;
     /*Modifica Usuario*/
     Usuario modifyUser(Usuario usuario);
     /*Elimina Usuario*/
-    Boolean deleteUser(int idUsuario);
+    Boolean deleteUser(Long idUsuario);
 }

@@ -21,27 +21,38 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idUsuario;
+    private long idUsuario;
 
     @Column
-    private String NombreUsuario;
+    private String nombreUsuario;
     
     @Column
-    private String Password;
+    private String password;
     
     @Column
-    private String CorreoUsuario  ;
-    
-      
-    public void agregarRole(Role elRole){
+    private String correoUsuario;
+
+
+    public Usuario(String username, String email, String encode) {
+        this.nombreUsuario = username;
+        this.correoUsuario = email;
+        this.password = encode;
+    }
+
+    public Usuario() {
+
+    }
+
+
+   /* public void agregarRole(Role elRole){
         if (role==null) role= new ArrayList<>();
        
         role.add(elRole);
         
         elRole.setUsuario(this);
-    }
+    }*/
     
     @OneToMany(mappedBy="usuario",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
-    private List<Role> role;
+    private Set<Role> role;
    
 }
