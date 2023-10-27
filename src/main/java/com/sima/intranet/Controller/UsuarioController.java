@@ -1,11 +1,16 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Dto.UserInfoResponse;
 import com.sima.intranet.Entity.Usuario;
+import com.sima.intranet.Enumarable.ERole;
 import com.sima.intranet.Interface.UsuarioInterface;
+import com.sima.intranet.Seguridad.jwt.JwtUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +26,7 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioInterface iusuario;
+
 
     @PostMapping("/nuevo")
     public ResponseEntity<?> nuevo(@RequestBody Usuario newUsuario){

@@ -5,17 +5,25 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Usuario;
+import com.sima.intranet.Enumarable.ERole;
 import com.sima.intranet.Interface.UsuarioInterface;
 import com.sima.intranet.Repository.UsuarioRepository;
 import java.util.Optional;
+
+import com.sima.intranet.Seguridad.jwt.JwtUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioInterface {
 
     @Autowired
     private UsuarioRepository rusuario;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     @Override
     public Usuario newUser(Usuario newUser) {
@@ -45,5 +53,7 @@ public class UsuarioServiceImpl implements UsuarioInterface {
         this.rusuario.deleteById(idUsuario);
         return true;
     }
+
+
 
 }

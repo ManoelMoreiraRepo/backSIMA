@@ -1,5 +1,6 @@
 package com.sima.intranet.Seguridad.jwt;
 
+import com.sima.intranet.Enumarable.ERole;
 import com.sima.intranet.Seguridad.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -38,8 +39,8 @@ public class JwtUtils {
         }
     }
 
-    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
-        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
+    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal , String roleName) {
+        String jwt = generateTokenFromUsernameYRole(userPrincipal.getUsername(), roleName);
         ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt).path("/").maxAge(24 * 60 * 60).httpOnly(true).build();
         return cookie;
     }
@@ -52,6 +53,15 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public ERole getRoleFromJwtToken(String token) {
+        if(validateJwtToken(token)){
+            Claims claims = Jwts.parser().setSigningKey(key()).parseClaimsJws(token).getBody();
+            String role = (String) claims.get("role");
+            return ERole.valueOf(role);
+        }
+        return null;
     }
 
     private Key key() {
@@ -78,6 +88,16 @@ public class JwtUtils {
     public String generateTokenFromUsername(String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateTokenFromUsernameYRole(String username , String eRole) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("role" , eRole)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)

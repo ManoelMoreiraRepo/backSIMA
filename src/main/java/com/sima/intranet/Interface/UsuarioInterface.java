@@ -1,8 +1,9 @@
 package com.sima.intranet.Interface;
 
 import com.sima.intranet.Entity.Usuario;
+import jakarta.servlet.http.HttpServletRequest;
 
- public interface UsuarioInterface {
+public interface UsuarioInterface {
      /*Nuevo usuario*/
     Usuario newUser(Usuario newUser);
     /*Lista Usuario*/
@@ -11,4 +12,5 @@ import com.sima.intranet.Entity.Usuario;
     Usuario modifyUser(Usuario usuario);
     /*Elimina Usuario*/
     Boolean deleteUser(Long idUsuario);
-}
+
+ }

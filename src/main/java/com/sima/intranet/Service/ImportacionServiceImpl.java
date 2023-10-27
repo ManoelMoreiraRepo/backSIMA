@@ -286,7 +286,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         case 30:
                             empleado.setObjetivoEmpleado(cell.getStringCellValue());
                             break;
-                        case 35:
+                        case 34:
                             empleado.setEstadoEmpleado(cell.getStringCellValue());
                             break;
                         case 42:
