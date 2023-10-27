@@ -34,7 +34,7 @@ public class UsuarioServiceImpl implements UsuarioInterface {
         usuarioEncontrado.get().setNombreUsuario(usuario.getNombreUsuario());
         usuarioEncontrado.get().setPassword(usuario.getPassword());
         usuarioEncontrado.get().setCorreoUsuario(usuario.getCorreoUsuario());
-        usuarioEncontrado.get().setRole(usuario.getRole());
+        usuarioEncontrado.get().setRoles(usuario.getRoles());
         this.newUser(usuarioEncontrado.get());
         }
         return null;
