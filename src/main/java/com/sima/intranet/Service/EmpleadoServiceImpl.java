@@ -6,10 +6,8 @@ import com.sima.intranet.Enumarable.Sindicato;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,39 +82,79 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         return empleado;    
     }
     @Override
-    public List<Map<String,Object>> getCantidadNominaPorGerencia(){
-       List<String[]> resultado = iEmpleadoRepository.countEmpleadoByGerencia();
-       List<Map<String,Object>> lista = new ArrayList<>();
-        for(String[]  dato  : resultado.stream().toList()){
+    public List<Map<String,Object>> getCantidadNominaPorGerencia() {
+        List<String[]> resultado = iEmpleadoRepository.countEmpleadoByGerencia();
+        List<Map<String,Object>> lista = new ArrayList<>();
+
+        // Crear un conjunto para realizar un seguimiento de las gerencias presentes
+        Set<Gerencia> gerenciasPresentes = new HashSet<>();
+        for (String[] dato : resultado) {
             Gerencia gerencia = Gerencia.valueOf(Optional.ofNullable(dato[1]).orElse(""));
-            String descripcion = "SIN GERENCIA";
-            String titulo = "SIN TITULO";
-            if(gerencia != null){
-                descripcion = String.format("%s   NOMINA ACTIVA" , gerencia.codigo);
-                titulo = gerencia.descrip;
+            if (gerencia != null) {
+                gerenciasPresentes.add(gerencia);
             }
-            lista.add(Map.of("cant" , dato[0] , "titulo" , titulo , "descrip" ,descripcion));
         }
-       return lista;
+
+        // Iterar sobre los valores del enumerador Gerencia
+        for (Gerencia g : Gerencia.values()) {
+            if (!gerenciasPresentes.contains(g)) {
+                // Agregar un registro con cantidad 0 para gerencias que no están en la consulta
+                String descripcion = String.format("%s   NOMINA ACTIVA", g.codigo);
+                String titulo = g.descrip;
+                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion));
+            }
+        }
+
+        // Iterar sobre los resultados de la consulta y agregar los registros correspondientes
+        for (String[] dato : resultado) {
+            Gerencia gerencia = Gerencia.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            if (gerencia != null) {
+                String descripcion = String.format("%s   NOMINA ACTIVA", gerencia.codigo);
+                String titulo = gerencia.descrip;
+                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion));
+            }
+        }
+
+        return lista;
     }
 
     @Override
-    public List<Map<String,Object>> getCantidadNominaPorSindicado(){
+    public List<Map<String,Object>> getCantidadNominaPorSindicado() {
         List<String[]> resultado = iEmpleadoRepository.countEmpleadoBySindicato();
         List<Map<String,Object>> lista = new ArrayList<>();
-        for(String[]  dato  : resultado.stream().toList()){
-            Sindicato sindicato = null;
-            if(Optional.ofNullable(dato[1]).isPresent()){
-                sindicato = Sindicato.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+
+        // Crear un conjunto para realizar un seguimiento de los sindicatos presentes
+        Set<Sindicato> sindicatosPresentes = new HashSet<>();
+        for (String[] dato : resultado) {
+            Sindicato sindicato = Sindicato.getSindicato(Optional.ofNullable(dato[1]).orElse(""));
+            if (sindicato != null) {
+                sindicatosPresentes.add(sindicato);
             }
-            String descripcion = "NOMINA ACTIVA";
-            String titulo = "SIN SINDICATO";
-            if(sindicato != null){
-                titulo = sindicato.name();
-            }
-            lista.add(Map.of("cant" , dato[0] , "titulo" , titulo , "descrip" ,descripcion));
         }
+
+        // Iterar sobre los valores del enumerador Sindicato
+        for (Sindicato s : Sindicato.values()) {
+            if (!sindicatosPresentes.contains(s)) {
+                // Agregar un registro con cantidad 0 para sindicatos que no están en la consulta
+                String descripcion = "NOMINA ACTIVA";
+                String titulo = s.name();
+                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion));
+            }
+        }
+
+        // Iterar sobre los resultados de la consulta y agregar los registros correspondientes
+        for (String[] dato : resultado) {
+            Sindicato sindicato = Sindicato.getSindicato(Optional.ofNullable(dato[1]).orElse(""));
+            String descripcion = "NOMINA ACTIVA";
+            if (sindicato != null) {
+                String titulo = sindicato.name();
+                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion));
+            }
+
+        }
+
         return lista;
     }
+
 
 }

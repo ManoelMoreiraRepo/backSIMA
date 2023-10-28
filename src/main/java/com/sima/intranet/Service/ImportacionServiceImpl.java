@@ -73,7 +73,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             List<String> cabezera = new ArrayList<>();
 
             for (Cell cell : sheet.getRow(0)) {
-                cabezera.add(cell.getStringCellValue());
+                cabezera.add(cell.getStringCellValue().trim());
             }
             System.out.println(cabezera);
 
@@ -101,82 +101,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
 
     }
-
-  /*  private void insertarFormatoGroupLegajo(Sheet sheet) {
-        List<Empleado> lista = new ArrayList<>();
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) {
-                continue;
-            }
-            Empleado empleado = null;
-            for (Cell cell : row) {
-
-                try {
-                    switch (cell.getColumnIndex()) {
-                        case 0:
-                            empleado = empledoService.findByLegajo(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())).orElse(new Empleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue())));
-                            break;
-                        case 1:
-                            empleado.setApellidoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 2:
-                            empleado.setNombreEmpleado(cell.getStringCellValue());
-                            break;
-                        case 3:
-                            empleado.setDireccionEmpleado(cell.getStringCellValue());
-                            break;
-                        case 4:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setDireccionEmpleado(empleado.getDireccionEmpleado() + " " + cell.getStringCellValue());
-                            break;
-                        case 13:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setCodigoPostalEmpleado(cell.getStringCellValue());
-                            break;
-                        case 15:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setTelefonoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 16:
-                            empleado.setEmailEmpleado(cell.getStringCellValue());
-                            break;
-                        case 17:
-                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue());
-                            break;
-                        case 23:
-                            cell.setCellType(CellType.STRING);
-                            if (cell.getStringCellValue() != null) {
-                                empleado.setDNIEmpleado(cell.getStringCellValue());
-                            }
-                            break;
-                        case 24:
-                            empleado.setFechaAltaEmpleado(cell.getDateCellValue());
-                            break;
-                        case 26:
-                            empleado.setSueldoTotal(new BigDecimal(cell.getNumericCellValue()));
-                            break;
-                        case 27:
-                            empleado.setCargoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 30:
-                            empleado.setObjetivoEmpleado(cell.getStringCellValue());
-                            break;
-
-                        default:
-                            //No me sirve el dato.
-                    }
-
-                } catch (Exception e) {
-                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
-                }
-            }
-            if(empleado!=null){
-                lista.add(empleado);
-            }
-        }
-        empledoService.saveAll(lista);
-    }
-*/
 
     /**
      * Realiza la insercion de dato sueldo total para los empleado que ya encuentran en la base de datos.
@@ -233,16 +157,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             Cell celdaDni = row.getCell(41);
             celdaDni.setCellType(CellType.STRING);
-/*
-            String dni = getUltimos8Digitos(celdaDni.getStringCellValue());
-*/
             String dni = celdaDni.getStringCellValue().trim();
             if(dni.isEmpty()){
                 continue;
             }
             Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
             Gerencia gerencia = null;
-            Credencial nuevaCredencial = null;
+            /*Credencial nuevaCredencial = null;*/
             for (Cell cell : row) {
 
                 try {
@@ -298,16 +219,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         case 45:
                             Sindicato s = null;
                             try {
-                                s = Sindicato.valueOf(cell.getStringCellValue());
+                                s = Sindicato.getSindicato(cell.getStringCellValue());
                             }catch (IllegalArgumentException e){
                                 logger.info("Sindicato no reconocido : " + cell.getStringCellValue());
                             }
-                            if(s!=null ){
-                                empleado.setSindicato(s);
-                            }
-
+                            empleado.setSindicato(s);
                             break;
-                        case 46:
+                        /*case 46:
                             TipoCredencial tipoCred = TipoCredencial.getTipoCredencial(cell.getStringCellValue());
                             Date fechaCred = row.getCell(47).getDateCellValue();
 
@@ -320,7 +238,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             }else{
                                 logger.info("fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() + ".Datos Insuficientes para crear la credencial.");
                             }
-                            break;
+                            break;*/
 
                         default:
                             //No me sirve el dato.
@@ -332,10 +250,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(empleado!=null){
                 listaEmpleados.add(empleado);
             }
-            if(nuevaCredencial!=null){
+            /*if(nuevaCredencial!=null){
                 empleado.getCredencial().add(nuevaCredencial);
                 listaCredenciales.add(nuevaCredencial);
-            }
+            }*/
 
         }
         empledoService.saveAll(listaEmpleados);
