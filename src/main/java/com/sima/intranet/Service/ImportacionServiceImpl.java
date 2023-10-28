@@ -46,7 +46,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_SUELDO_NOMINA = List.of(
             "Legajo", "Apellido", "Nombre/s", "C.U.I.L.", "Sucursal", "Sección", "Objetivo",
-            "Zona de pago", "Supervisor", "Ingreso", "Baja", "Banco"
+            "Zona de pago", "Supervisor", "Ingreso", "Baja"
     );
 
     public static final List<String> FORMATO_LEGAJO_NOMINA = List.of(
@@ -97,7 +97,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 logger.info("Actualiacion de FORMATO CREDENCIALES");
                 insertarFomatoCredenciales(sheet);
             }else{
-                cabezera.removeIf((dato) -> FORMATO_CREDENCIALES.contains(dato));
+                cabezera.removeIf((dato) -> FORMATO_SUELDO_NOMINA.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
                 System.out.println("Cabezeras no reconocidas");
                 System.out.println(cabezera);
@@ -191,7 +191,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 Empleado empleado = empleadoOpt.get();
                 for (Cell cell : row) {
                     try {
-                        if (cell.getColumnIndex() > 11) {
+                        if (cell.getColumnIndex() > 10) {
                             try {
                                 sueldoTotal += cell.getNumericCellValue();
                             } catch (Exception e) {
