@@ -1,13 +1,9 @@
 package com.sima.intranet.Dto;
 
+import lombok.Data;
+
+@Data
 public class LoginRequest {
     private Object username;
     private Object password;
-    public Object getUsername() {
-        return this.username;
-    }
-
-    public Object getPassword() {
-        return this.password;
-    }
 }

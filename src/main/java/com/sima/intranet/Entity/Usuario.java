@@ -28,9 +28,8 @@ public class Usuario {
     private String correoUsuario;
 
 
-    public Usuario(String username, String email, String encode) {
+    public Usuario(String username, String encode) {
         this.nombreUsuario = username;
-        this.correoUsuario = email;
         this.password = encode;
     }
 
