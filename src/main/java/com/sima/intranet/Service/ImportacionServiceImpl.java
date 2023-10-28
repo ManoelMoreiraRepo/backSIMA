@@ -3,11 +3,13 @@ package com.sima.intranet.Service;
 import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Enumarable.Jurisdiccion;
 import com.sima.intranet.Enumarable.Sindicato;
 import com.sima.intranet.Enumarable.TipoCredencial;
 import com.sima.intranet.Interface.CredencialInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Interface.ImportacionInterface;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO", "Tipo Credencial", "Fecha Credencial"
     );
 
+    public static final List<String> FORMATO_CREDENCIALES = List.of(
+            "Apellido", "Nombre/s", "C.U.I.L.", "DNI", "CREDENCIAL FISICA", "NOTA", "VENCIMIENTO", "JURISDICCION", "GERENCIA"
+    );
+
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
      * @param ruta
@@ -87,8 +93,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO LEGAJO");
                 insertarFormatoLegajo(sheet);
-            } else{
-                cabezera.removeIf((dato) -> FORMATO_LEGAJO_NOMINA.contains(dato));
+            } else if(FORMATO_CREDENCIALES.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO CREDENCIALES");
+                insertarFomatoCredenciales(sheet);
+            }else{
+                cabezera.removeIf((dato) -> FORMATO_CREDENCIALES.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
                 System.out.println("Cabezeras no reconocidas");
                 System.out.println(cabezera);
@@ -100,6 +109,65 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             logger.error("Error al intentar realizar la importacion.");
         }
 
+    }
+    @Transactional
+    private void insertarFomatoCredenciales(Sheet sheet) {
+        for(Row row : sheet){
+            if (row.getRowNum() == 0) {
+                continue;
+            }
+            Cell celdaDni = row.getCell(3);
+            celdaDni.setCellType(CellType.STRING);
+            String dni = celdaDni.getStringCellValue().trim();
+            if(dni.isEmpty()){
+                continue;
+            }
+            Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
+
+            if(!empleadoOpt.isPresent()){
+                logger.error("Empleado no encontrado, DNI : " + dni);
+                continue;
+            }
+            Empleado empleado = empleadoOpt.get();
+            Cell celGerencia = row.getCell(8);
+            celGerencia.setCellType(CellType.STRING);
+            Gerencia gerencia = Gerencia.getGerencia(celGerencia.getStringCellValue());
+
+            Cell celJurisdiccion = row.getCell(7);
+            celJurisdiccion.setCellType(CellType.STRING);
+            Jurisdiccion jurisdiccion = Jurisdiccion.getJurisdiccion(celJurisdiccion.getStringCellValue());
+
+            if(gerencia == null || jurisdiccion == null){
+                logger.error("Jurisdiccion o generencia invalida, DNI : " + dni);
+                continue;
+            }
+            Credencial credencial = credencialService.findByJurisdiccionAndGerencia(jurisdiccion , gerencia , empleado);
+
+            if(credencial == null){
+                credencial = new Credencial();
+                credencial.setJurisdiccion(jurisdiccion);
+                credencial.setEmpleado(empleado);
+                credencial.setGerencia(gerencia);
+            }
+            Cell cellTipo = row.getCell(4);
+            cellTipo.setCellType(CellType.STRING);
+            credencial.setTipo(TipoCredencial.getTipoCredencialImportacion(cellTipo.getStringCellValue()));
+            Cell cellVencimiento = row.getCell(6);
+            try {
+                if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
+                    credencial.setFechaVencimentoCredencial(cellVencimiento.getDateCellValue());
+                }else{
+                    credencial.setFechaVencimentoCredencial(DateUtil.getJavaDate(cellVencimiento.getNumericCellValue()));
+                }
+            }catch (IllegalStateException e){
+                logger.error("Fecha de vencimiento invalida, DNI: " + dni);
+            }
+            if(empleado.getCredencial() == null) {
+                empleado.setCredencial(new ArrayList<>());
+            }
+            empleado.getCredencial().add(credencial);
+            credencialService.save(credencial);
+        }
     }
 
     /**
@@ -150,7 +218,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
      */
     private void insertarFormatoLegajo(Sheet sheet) {
         List<Empleado> listaEmpleados = new ArrayList<>();
-        List<Credencial> listaCredenciales = new ArrayList<>();
+        Set<String> dnis = new HashSet<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
@@ -161,9 +229,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(dni.isEmpty()){
                 continue;
             }
+
+            if(dnis.contains(dni.trim())){
+                continue;
+            }else{
+                dnis.add(dni.trim());
+            }
             Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
             Gerencia gerencia = null;
-            /*Credencial nuevaCredencial = null;*/
             for (Cell cell : row) {
 
                 try {
@@ -219,26 +292,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         case 45:
                             Sindicato s = null;
                             try {
-                                s = Sindicato.getSindicato(cell.getStringCellValue());
+                                s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
                             }catch (IllegalArgumentException e){
-                                logger.info("Sindicato no reconocido : " + cell.getStringCellValue());
+                                logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
                             }
                             empleado.setSindicato(s);
                             break;
-                        /*case 46:
-                            TipoCredencial tipoCred = TipoCredencial.getTipoCredencial(cell.getStringCellValue());
-                            Date fechaCred = row.getCell(47).getDateCellValue();
-
-                            if(tipoCred!=null && fechaCred!=null && gerencia!=null){
-
-                                if(empleado.getCredencial() == null || empleado.getCredencial().isEmpty()){
-                                    empleado.setCredencial(new ArrayList<>());
-                                }
-                                nuevaCredencial = new Credencial(empleado , fechaCred , tipoCred , gerencia);
-                            }else{
-                                logger.info("fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() + ".Datos Insuficientes para crear la credencial.");
-                            }
-                            break;*/
 
                         default:
                             //No me sirve el dato.
@@ -250,18 +309,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(empleado!=null){
                 listaEmpleados.add(empleado);
             }
-            /*if(nuevaCredencial!=null){
-                empleado.getCredencial().add(nuevaCredencial);
-                listaCredenciales.add(nuevaCredencial);
-            }*/
-
         }
         empledoService.saveAll(listaEmpleados);
-        credencialService.saveAll(listaCredenciales);
     }
 
     private void insertarFormatoBejerman(Sheet sheet) {
         List<Empleado> lista = new ArrayList<>();
+        Set<String> dnis = new HashSet<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
                 continue;
@@ -272,8 +326,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(dni.isEmpty()){
                 continue;
             }
-            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
 
+            if(dnis.contains(dni.trim())){
+                continue;
+            }else{
+                dnis.add(dni.trim());
+            }
+            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
             for (Cell cell : row) {
                 try {
                     switch (cell.getColumnIndex()) {

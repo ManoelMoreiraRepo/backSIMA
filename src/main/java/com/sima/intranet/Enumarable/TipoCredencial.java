@@ -18,4 +18,17 @@ public enum TipoCredencial {
         }
         return null;
     }
+
+    public static TipoCredencial getTipoCredencialImportacion(String esCredencialFisica){
+        if(esCredencialFisica.trim().equals("SI")){
+            return TipoCredencial.CREDENCIAL_FISICA;
+        }else if(esCredencialFisica.trim().equals("NO")){
+            return  TipoCredencial.NOTA_MINISTERIO;
+        }else{
+            return null;
+        }
+
+    }
+
+
 }

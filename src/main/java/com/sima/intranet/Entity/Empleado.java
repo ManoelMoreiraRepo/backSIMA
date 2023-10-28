@@ -33,8 +33,7 @@ public class Empleado {
     
     @Column(name = "estadoEmpleado")
     private String estadoEmpleado;
-
-    @Column(name = "DNIEmpleado")
+    @Column(name = "DNIEmpleado",unique=true )
     private String DNIEmpleado;
 
     @Column(name = "nombreEmpleado")
@@ -83,19 +82,19 @@ public class Empleado {
     
     //Indumentaria Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
-    ,fetch = FetchType.LAZY)
+    ,fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private List<Indumentaria> indumentaria;
     
     //Credenciales Del Empleado
-    @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
+    @OneToMany(mappedBy="empleado",cascade={CascadeType.ALL}
     ,fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private List<Credencial> credencial;
     
     //Capacitacion Del Empleado
     @OneToMany(mappedBy="empleado",cascade={CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}
-    ,fetch = FetchType.LAZY)
+    ,fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"empleado","hibernateLazyInitializer","handler"})
     private List<Capacitacion> capacitacion;
     
@@ -112,4 +111,15 @@ public class Empleado {
     public Empleado(String dni){
         this.DNIEmpleado = dni;
     }
+
+    @Override
+    public String toString() {
+        return "Empleado{" +
+                "id=" + idEmpleado +
+                ", nombre='" + nombreEmpleado + '\'' +
+                ", dni='" + DNIEmpleado + '\'' +
+                ", cantidadCredenciales=" + (credencial != null ? credencial.size() : 0) +
+                '}';
+    }
+
 }
