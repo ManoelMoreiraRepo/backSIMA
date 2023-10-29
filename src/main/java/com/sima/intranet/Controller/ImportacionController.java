@@ -22,7 +22,7 @@ public class ImportacionController {
     @Autowired
     private ImportacionInterface importador;
 
-    @PostMapping("/nomina")
+    @PostMapping("/archivo")
     public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("No se puedo recibir el archivo.");

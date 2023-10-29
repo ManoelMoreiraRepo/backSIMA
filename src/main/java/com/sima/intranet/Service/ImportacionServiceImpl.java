@@ -22,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -155,15 +156,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             credencial.setTipo(TipoCredencial.getTipoCredencialImportacion(cellTipo.getStringCellValue()));
             Cell cellVencimiento = row.getCell(6);
             try {
-                if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
-                    credencial.setFechaVencimentoCredencial(cellVencimiento.getDateCellValue().toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate());
-                }else{
-                    credencial.setFechaVencimentoCredencial(DateUtil.getJavaDate(cellVencimiento.getNumericCellValue()).toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate());
+                if(cellVencimiento.getDateCellValue()!=null){
+                    if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
+                        credencial.setFechaVencimentoCredencial(getLocalDateFromExcel(cellVencimiento.getDateCellValue()));
+                    }else{
+                        credencial.setFechaVencimentoCredencial(getLocalDateFromExcelNumeric(cellVencimiento.getNumericCellValue()));
+                    }
                 }
+
             }catch (IllegalStateException e){
                 logger.error("Fecha de vencimiento invalida, DNI: " + dni);
             }
@@ -173,6 +173,28 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             empleado.getCredencial().add(credencial);
             credencialService.save(credencial);
         }
+    }
+
+    private LocalDate getLocalDateFromExcel(Date dateCellValue) {
+
+        if(dateCellValue == null){
+            return null;
+        }
+
+        return dateCellValue.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+    }
+
+    private LocalDate getLocalDateFromExcelNumeric(Double dateCellValue) {
+
+        if(dateCellValue == null){
+            return null;
+        }
+        return DateUtil.getJavaDate(dateCellValue).toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 
     /**
@@ -274,14 +296,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             empleado.setEmailEmpleado(cell.getStringCellValue());
                             break;
                         case 17:
-                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue().toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate());
+                            empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
                             break;
                         case 24:
-                            empleado.setFechaAltaEmpleado(cell.getDateCellValue().toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate());
+                            empleado.setFechaAltaEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
                             break;
                         case 27:
                             empleado.setCargoEmpleado(cell.getStringCellValue());
@@ -363,9 +381,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
                             break;
                         case 21:
-                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue().toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate());
+                            empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
                             break;
                         case 24:
                             cell.setCellType(CellType.STRING);

@@ -19,6 +19,7 @@ public class CorsConfig {
     @Value("${cors.allowCredentials}")
     private boolean allowCredentials;
 
+
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -57,6 +57,7 @@ public class CredencialController {
 
     @PostMapping("/cantidad")
     public List<Long> getCoutEstadisticaJurisdiccionGerencia(@RequestBody Map<String,String> body){
+
         Jurisdiccion jurisdiccion = Jurisdiccion.valueOf(body.get("jurisdiccion"));
         Gerencia gerencia = Gerencia.getGerencia(body.get("gerencia"));
         TipoCredencial tipo = TipoCredencial.getTipoCredencial(body.get("tipo"));
