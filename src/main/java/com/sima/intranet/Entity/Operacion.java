@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.Data;
 
@@ -21,10 +23,10 @@ public class Operacion {
     private Long idOperacion;
 
     @Column
-    private Date fechaInicioOperacion;
+    private LocalDate fechaInicioOperacion;
 
     @Column
-    private Date fechaFinalOperacion;
+    private LocalDate fechaFinalOperacion;
 
     @Column
     private String grillaOperacion;

@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.Data;
 
@@ -30,10 +32,10 @@ public class Capacitacion {
     private  boolean EstadoCapacitacion;
     
     @Column
-    private Date FechaOtorgamentoCapacitacion;
+    private LocalDate FechaOtorgamentoCapacitacion;
     
     @Column
-    private Date FechaVencimentoCapacitacion;
+    private LocalDate FechaVencimentoCapacitacion;
     
     
     @ManyToOne(fetch = FetchType.LAZY)

@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -46,10 +47,10 @@ public class Empleado {
     private String legajoEmpleado;
 
     @Column(name = "fechaNascimentoEmpleado")
-    private Date fechaNascimentoEmpleado;
+    private LocalDate fechaNascimentoEmpleado;
 
     @Column(name = "fechaAltaEmpleado")
-    private Date fechaAltaEmpleado;
+    private LocalDate fechaAltaEmpleado;
 
     @Column(name = "objetivoEmpleado")
     private String objetivoEmpleado;

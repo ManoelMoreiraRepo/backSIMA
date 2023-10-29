@@ -4,8 +4,12 @@ import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Jurisdiccion;
+import com.sima.intranet.Enumarable.TipoCredencial;
 import com.sima.intranet.Interface.CredencialInterface;
 import com.sima.intranet.Repository.CredencialRepository;
+
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,4 +79,11 @@ public class CredencialServiceImpl implements CredencialInterface {
         this.rCredencial.save(credencial);
     }
 
+    public Long getCantidadCredencialesConVencimientoAnteriorA(LocalDate fecha , Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo){
+        return this.rCredencial.countCredencialByFechaVencimentoCredencialBeforeAndJurisdiccionAndGerenciaAndTipo(fecha,jurisdiccion,gerencia , tipo);
+    }
+
+    public Long getCantidadCredencialesConVecimientoEntre(LocalDate fecha1, LocalDate fecha2 , Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo){
+        return this.rCredencial.countCredencialByFechaVencimentoCredencialBetweenAndJurisdiccionAndGerenciaAndTipo(fecha1,fecha2,jurisdiccion,gerencia , tipo);
+    }
 }

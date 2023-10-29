@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.Data;
 
@@ -33,10 +35,10 @@ public class Indumentaria {
     private String talleIndumentaria;
     
     @Column
-    private Date fechaUltimaEntregaIndumentaria;
+    private LocalDate fechaUltimaEntregaIndumentaria;
      
     @Column
-    private Date fechaProximaEntregaIndumentaria;
+    private LocalDate fechaProximaEntregaIndumentaria;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="idEmpleado")

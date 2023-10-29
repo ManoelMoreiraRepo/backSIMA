@@ -12,9 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+
+import java.time.LocalDate;
 import java.util.Date;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -38,10 +39,10 @@ public class Credencial {
     private  boolean EstadoCredencial;
     
     @Column
-    private Date FechaOtorgamentoCredencial;
+    private LocalDate fechaOtorgamentoCredencial;
     
     @Column
-    private Date FechaVencimentoCredencial;
+    private LocalDate fechaVencimentoCredencial;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="idEmpleado")
@@ -54,9 +55,9 @@ public class Credencial {
 
     private Jurisdiccion jurisdiccion;
 
-    public Credencial(Empleado empleado, Date fechaCred, TipoCredencial tipoCred, Gerencia gerencia) {
+    public Credencial(Empleado empleado, LocalDate fechaCred, TipoCredencial tipoCred, Gerencia gerencia) {
         this.empleado = empleado;
-        this.FechaVencimentoCredencial = fechaCred;
+        this.fechaVencimentoCredencial = fechaCred;
         this.tipo = tipoCred;
         this.gerencia = gerencia;
     }
@@ -66,7 +67,7 @@ public class Credencial {
         return "Credencial{" +
                 "id=" + idCredencial +
                 ", tipo='" + tipo + '\'' +
-                ", fechaVencimiento='" + FechaVencimentoCredencial + '\'' +
+                ", fechaVencimiento='" + fechaVencimentoCredencial + '\'' +
                 '}';
     }
 

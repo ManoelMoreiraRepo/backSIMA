@@ -22,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -155,9 +156,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Cell cellVencimiento = row.getCell(6);
             try {
                 if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
-                    credencial.setFechaVencimentoCredencial(cellVencimiento.getDateCellValue());
+                    credencial.setFechaVencimentoCredencial(cellVencimiento.getDateCellValue().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate());
                 }else{
-                    credencial.setFechaVencimentoCredencial(DateUtil.getJavaDate(cellVencimiento.getNumericCellValue()));
+                    credencial.setFechaVencimentoCredencial(DateUtil.getJavaDate(cellVencimiento.getNumericCellValue()).toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate());
                 }
             }catch (IllegalStateException e){
                 logger.error("Fecha de vencimiento invalida, DNI: " + dni);
@@ -269,10 +274,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             empleado.setEmailEmpleado(cell.getStringCellValue());
                             break;
                         case 17:
-                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue());
+                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue().toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate());
                             break;
                         case 24:
-                            empleado.setFechaAltaEmpleado(cell.getDateCellValue());
+                            empleado.setFechaAltaEmpleado(cell.getDateCellValue().toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate());
                             break;
                         case 27:
                             empleado.setCargoEmpleado(cell.getStringCellValue());
@@ -354,7 +363,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
                             break;
                         case 21:
-                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue());
+                            empleado.setFechaNascimentoEmpleado(cell.getDateCellValue().toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate());
                             break;
                         case 24:
                             cell.setCellType(CellType.STRING);
