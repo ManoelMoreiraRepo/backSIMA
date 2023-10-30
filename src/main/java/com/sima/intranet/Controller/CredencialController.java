@@ -55,18 +55,24 @@ public class CredencialController {
         return iCredencial.listByIdEmpleado(id);
     }
 
-    @PostMapping("/cantidad")
-    public List<Long> getCoutEstadisticaJurisdiccionGerencia(@RequestBody Map<String,String> body){
+    @GetMapping("/cantidad")
+    public List<List<Long>> getEstadisticaCredenciales(){
+        List lista = new ArrayList<>();
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.CABA , Gerencia.GER_003 , TipoCredencial.NOTA_MINISTERIO));
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.CABA , Gerencia.GER_004 , TipoCredencial.NOTA_MINISTERIO));
 
-        Jurisdiccion jurisdiccion = Jurisdiccion.valueOf(body.get("jurisdiccion"));
-        Gerencia gerencia = Gerencia.getGerencia(body.get("gerencia"));
-        TipoCredencial tipo = TipoCredencial.getTipoCredencial(body.get("tipo"));
-        if(jurisdiccion == null || gerencia == null || tipo == null){
-            throw new ParametroInvalidoException("Los parametros son invalidos");
-        }
-        Long vencidas = iCredencial.getCantidadCredencialesConVencimientoAnteriorA(LocalDate.now() , jurisdiccion , gerencia , tipo);
-        Long proxMes = iCredencial.getCantidadCredencialesConVecimientoEntre(LocalDate.now() , LocalDate.now().plusMonths(1) , jurisdiccion , gerencia , tipo);
-        Long prox3Meses = iCredencial.getCantidadCredencialesConVecimientoEntre(LocalDate.now().plusMonths(1) , LocalDate.now().plusMonths(4) , jurisdiccion , gerencia , tipo);
-        return List.of(vencidas , proxMes , prox3Meses);
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.CABA , Gerencia.GER_003 , TipoCredencial.CREDENCIAL_FISICA));
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.CABA , Gerencia.GER_004 , TipoCredencial.CREDENCIAL_FISICA));
+
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.PROVINCIA , Gerencia.GER_003 , TipoCredencial.NOTA_MINISTERIO));
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.PROVINCIA , Gerencia.GER_004 , TipoCredencial.NOTA_MINISTERIO));
+
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.PROVINCIA , Gerencia.GER_003 , TipoCredencial.CREDENCIAL_FISICA));
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.PROVINCIA , Gerencia.GER_004 , TipoCredencial.CREDENCIAL_FISICA));
+
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.AEP , Gerencia.GER_002 , TipoCredencial.CREDENCIAL_FISICA));
+        lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.EZE , Gerencia.GER_002 , TipoCredencial.CREDENCIAL_FISICA));
+
+        return lista;
     }
 }
