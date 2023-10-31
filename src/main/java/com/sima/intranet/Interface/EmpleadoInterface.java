@@ -1,15 +1,18 @@
 package com.sima.intranet.Interface;
 
 import com.sima.intranet.Entity.Empleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public interface EmpleadoInterface {
     
-    public List<Empleado> getEmpleados();
+    public Page<Empleado> getEmpleados(Pageable pageable);
     
-    public List<Empleado> findEmpleado(String nombreEmpleado);
+    public Page<Empleado> findEmpleado(Pageable pageable ,String nombreEmpleado);
 
     public void saveEmpleado(Empleado empleado);
 

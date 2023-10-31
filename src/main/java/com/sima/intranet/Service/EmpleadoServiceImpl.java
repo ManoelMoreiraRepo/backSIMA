@@ -9,6 +9,8 @@ import com.sima.intranet.Repository.EmpleadoRepository;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,14 +20,13 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
     EmpleadoRepository iEmpleadoRepository;
 
     @Override
-    public List<Empleado> getEmpleados() {
-        List<Empleado> empleadosmostrar = iEmpleadoRepository.findAll();
-        return empleadosmostrar;
+    public Page<Empleado> getEmpleados(Pageable pageable) {
+        return iEmpleadoRepository.findAll(pageable);
     }
     
     @Override
-    public List<Empleado> findEmpleado(String nombreEmpleado) {
-        return iEmpleadoRepository.findByNombreEmpleadoContainingIgnoreCase(nombreEmpleado);
+    public Page<Empleado> findEmpleado(Pageable pageable, String nombreEmpleado) {
+        return iEmpleadoRepository.findByNombreEmpleadoContainingIgnoreCase(pageable , nombreEmpleado);
     }
     
     @Override
