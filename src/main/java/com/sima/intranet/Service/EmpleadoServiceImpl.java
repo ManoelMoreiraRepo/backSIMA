@@ -90,7 +90,11 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         // Crear un conjunto para realizar un seguimiento de las gerencias presentes
         Set<Gerencia> gerenciasPresentes = new HashSet<>();
         for (String[] dato : resultado) {
-            Gerencia gerencia = Gerencia.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            Gerencia gerencia = null;
+            String ger = Optional.ofNullable(dato[1]).orElse("");
+            if(!ger.isEmpty()){
+                gerencia = Gerencia.valueOf(ger);
+            }
             if (gerencia != null) {
                 gerenciasPresentes.add(gerencia);
             }
@@ -108,7 +112,11 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
 
         // Iterar sobre los resultados de la consulta y agregar los registros correspondientes
         for (String[] dato : resultado) {
-            Gerencia gerencia = Gerencia.valueOf(Optional.ofNullable(dato[1]).orElse(""));
+            Gerencia gerencia = null;
+            String ger = Optional.ofNullable(dato[1]).orElse("");
+            if(!ger.isEmpty()){
+                gerencia = Gerencia.valueOf(ger);
+            }
             if (gerencia != null) {
                 String descripcion = String.format("%s   NOMINA ACTIVA", gerencia.codigo);
                 String titulo = gerencia.descrip;

@@ -35,7 +35,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     @Autowired
     private CredencialInterface credencialService;
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
-            "txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
+            "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
             "per_codarea", "per_ttel", "per_tmail", "per_locms", "per_sexo", "per_fNac", "per_estc", "per_tDoc", "per_ndoc",
             "per_nac", "per_cuil", "lab_cat", "lab_sec", "lab_pto", "lab_car", "lab_cla", "lab_basico", "lab_Ese",
@@ -363,34 +363,34 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             for (Cell cell : row) {
                 try {
                     switch (cell.getColumnIndex()) {
-                        case 0:
+                        case 1:
                             empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
                             break;
-                        case 1:
+                        case 2:
                             empleado.setNombreEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 1));
                             empleado.setApellidoEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 0));
                             break;
-                        case 2:
+                        case 3:
                             cell.setCellType(CellType.STRING);
                             empleado.setTelefonoEmpleado(getStringSinEspacios(cell.getStringCellValue()));
                             break;
-                        case 3:
+                        case 4:
                             empleado.setDireccionEmpleado(cell.getStringCellValue());
                             break;
-                        case 10:
+                        case 11:
                             empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
                             break;
-                        case 21:
+                        case 22:
                             empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
                             break;
-                        case 24:
+                        case 25:
                             cell.setCellType(CellType.STRING);
                             empleado.setDNIEmpleado(cell.getStringCellValue());
                             break;
-                        case 28:
+                        case 29:
                             empleado.setObjetivoEmpleado(cell.getStringCellValue());
                             break;
-                        case 30:
+                        case 31:
                             empleado.setCargoEmpleado(cell.getStringCellValue());
                             break;
                         default:
