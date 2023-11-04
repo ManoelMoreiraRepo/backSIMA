@@ -146,7 +146,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
             if (!sindicatosPresentes.contains(s)) {
                 // Agregar un registro con cantidad 0 para sindicatos que no están en la consulta
                 String descripcion = "NOMINA ACTIVA";
-                String titulo = s.name();
+                String titulo = s.titulo;
                 lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion));
             }
         }
@@ -156,7 +156,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
             Sindicato sindicato = Sindicato.getSindicato(Optional.ofNullable(dato[1]).orElse(""));
             String descripcion = "NOMINA ACTIVA";
             if (sindicato != null) {
-                String titulo = sindicato.name();
+                String titulo = sindicato.titulo;
                 lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion));
             }
 

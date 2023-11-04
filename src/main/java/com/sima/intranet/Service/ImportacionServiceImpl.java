@@ -347,7 +347,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Cell celdaDni = row.getCell(24);
+            Cell celdaDni = row.getCell(25);
             celdaDni.setCellType(CellType.STRING);
             String dni = celdaDni.getStringCellValue();
             if(dni.isEmpty()){
@@ -360,9 +360,16 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 dnis.add(dni.trim());
             }
             Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
+            Gerencia gerencia = null;
             for (Cell cell : row) {
                 try {
                     switch (cell.getColumnIndex()) {
+                        case 0:
+                            gerencia = Gerencia.getGerencia(cell.getStringCellValue());
+                            if(gerencia!=null){
+                                empleado.setGerencia(gerencia);
+                            }
+                            break;
                         case 1:
                             empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
                             break;
@@ -392,6 +399,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             break;
                         case 31:
                             empleado.setCargoEmpleado(cell.getStringCellValue());
+                            break;
+                        case 64:
+                            Sindicato s = null;
+                            try {
+                                s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
+                            }catch (IllegalArgumentException e){
+                                logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
+                            }
+                            empleado.setSindicato(s);
                             break;
                         default:
                             //No me sirve el dato.
