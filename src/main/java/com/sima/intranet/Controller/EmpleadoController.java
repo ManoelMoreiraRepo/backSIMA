@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,12 +57,21 @@ public class EmpleadoController {
     }
 
     @GetMapping("/search")
-    public Page<Empleado> searchEmployeesByName(@PageableDefault(size = 20 ) Pageable pageable, @RequestParam("nombreEmpleado") String nombreEmpleado) {
-        if(nombreEmpleado.isBlank()){
+    public Page<Empleado> searchEmployeesByName(@PageableDefault(size = 20 ) Pageable pageable, @RequestParam("nombreEmpleado")String nombreEmpleado , @RequestParam String ordenado , @RequestParam String orden ) {
+        if(!ordenado.isEmpty() && !orden.isEmpty()){
+            if(orden.equals("ASC")){
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.ASC, ordenado));
+            }else{
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, ordenado));
+            }
+
+        }
+
+         if(nombreEmpleado.isBlank()){
             return iEmpleadoService.getEmpleados(pageable);
         }
 
-        return iEmpleadoService.findEmpleado(pageable , nombreEmpleado);
+        return iEmpleadoService.findEmpleado(pageable , nombreEmpleado.trim().toLowerCase());
     }
 
     @PostMapping("/nuevo")

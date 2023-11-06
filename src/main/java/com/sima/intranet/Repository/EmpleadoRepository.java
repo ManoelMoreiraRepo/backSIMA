@@ -12,8 +12,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleado, Long>{
-    
-     Page<Empleado> findByNombreEmpleadoContainingIgnoreCase(Pageable pageable , String nombreEmpleado);
+     @Query("SELECT e FROM Empleado  e WHERE  LOWER(e.nombreEmpleado) LIKE %:dato% OR LOWER(e.apellidoEmpleado) LIKE %:dato% ")
+     Page<Empleado> findByPorNombreyApellido(Pageable pageable , String dato);
     
      Optional<Empleado> findByLegajoEmpleado(String legajo);
 
