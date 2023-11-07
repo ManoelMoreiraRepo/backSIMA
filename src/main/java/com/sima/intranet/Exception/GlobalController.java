@@ -14,4 +14,10 @@ public class GlobalController {
         Mensaje msj = new Mensaje(!ex.getMessage().isEmpty() ? ex.getMessage() : "El parametro es invalido.");
         return msj;
     }
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public  Mensaje excepcionGeneral(RuntimeException ex){
+        Mensaje msj = new Mensaje(!ex.getMessage().isEmpty() ? ex.getMessage() : "Ocurrio un error.");
+        return msj;
+    }
 }

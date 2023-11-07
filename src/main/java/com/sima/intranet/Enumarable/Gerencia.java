@@ -3,9 +3,9 @@ package com.sima.intranet.Enumarable;
 public enum Gerencia {
 
     GER_001 ( "G01" , "GRUPO SIMA"),
-    GER_002 ( "G02" , "AEROPUERTOS"),
+    GER_002 ( "G02" , "AEROPUERTOS"),//GPS
     GER_003 ( "G03" , "GLOBAL"),
-    GER_004 ( "G04" , "EDENOR"),
+    GER_004 ( "G04" , "EDENOR"), // GLOBAL
     GER_005 ( "G05" , "LA BIZANTINA"),
     GER_006 ( "G06" , "ECOKLIN");
 
