@@ -23,5 +23,8 @@ public class Oferta {
     private String descripcion;
     @Column(columnDefinition = "TEXT")
     private String requisitos;
+    @Column(columnDefinition = "TEXT")
+    private String seOfrece;
+
     private Gerencia gerencia;
 }

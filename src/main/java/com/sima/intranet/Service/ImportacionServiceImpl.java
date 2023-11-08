@@ -2,6 +2,7 @@ package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Entity.Oferta;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Jurisdiccion;
 import com.sima.intranet.Enumarable.Sindicato;
@@ -9,6 +10,7 @@ import com.sima.intranet.Enumarable.TipoCredencial;
 import com.sima.intranet.Interface.CredencialInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Interface.ImportacionInterface;
+import com.sima.intranet.Interface.OfertaInterface;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     private EmpleadoInterface empledoService;
     @Autowired
     private CredencialInterface credencialService;
+
+    @Autowired
+    private OfertaInterface ofertaService;
+
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
@@ -59,12 +65,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Ingreso anterior 1", "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo",
             "Zona de pago", "C.U.I.L.", "Modalidad de contratación", "Situación", "Condición",
             "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social", "DNI",
-            "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO", "Tipo Credencial", "Fecha Credencial"
+            "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO"
     );
 
     public static final List<String> FORMATO_CREDENCIALES = List.of(
             "Apellido", "Nombre/s", "C.U.I.L.", "DNI", "CREDENCIAL FISICA", "NOTA", "VENCIMIENTO", "JURISDICCION", "GERENCIA"
     );
+
+
+    public static final List<String> FORMATO_OFERTAS_EMPLEO = List.of("EMPRESA","CODIGO","ZONA","TITULO" ,"BREVE DESCRIPCION" ,"REQUISITOS" , "SE OFRECE");
 
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
@@ -98,8 +107,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             } else if(FORMATO_CREDENCIALES.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO CREDENCIALES");
                 insertarFomatoCredenciales(sheet);
+            }else if(FORMATO_OFERTAS_EMPLEO.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO OFERTAS EMPLEO.");
+                insertarFomatoOfertasEmpleo(sheet);
             }else{
-                cabezera.removeIf((dato) -> FORMATO_SUELDO_NOMINA.contains(dato));
+                cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
                 System.out.println("Cabezeras no reconocidas");
                 System.out.println(cabezera);
@@ -112,6 +124,36 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
 
     }
+
+    private void insertarFomatoOfertasEmpleo(Sheet sheet) {
+        List<Oferta> ofertas = new ArrayList<>();
+        for(Row row : sheet){
+            if (row.getRowNum() == 0) {
+                continue;
+            }
+            String strinGerencia = getStringValorCelda(row.getCell(0));
+            Gerencia gerencia = Gerencia.getGerenciaParaImpOfertaEmpleo(strinGerencia);
+            String stringCodigo = getStringValorCelda(row.getCell(1));
+
+            if(gerencia==null || stringCodigo == null){
+                logger.error("Empresa o codigo no encontrado fila nro: " + row.getRowNum());
+                continue;
+            }
+
+            Oferta oferta = ofertaService.getOferta(stringCodigo,gerencia).orElse(Oferta.builder()
+                            .gerencia(gerencia)
+                            .codigo(stringCodigo)
+                            .build());
+            oferta.setTitulo(getStringValorCelda(row.getCell(2)));
+            oferta.setZona(getStringValorCelda(row.getCell(3)));
+            oferta.setDescripcion(getStringValorCelda(row.getCell(4)));
+            oferta.setRequisitos(getStringValorCelda(row.getCell(5)));
+            oferta.setSeOfrece(getStringValorCelda(row.getCell(6)));
+            ofertas.add(oferta);
+        }
+        ofertaService.saveAll(ofertas);
+    }
+
     @Transactional
     private void insertarFomatoCredenciales(Sheet sheet) {
         for(Row row : sheet){
@@ -486,5 +528,16 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         } else {
             return "";
         }
+    }
+
+    private static String getStringValorCelda(Cell cell){
+        if(cell == null){
+            return null;
+        }
+        cell.setCellType(CellType.STRING);
+        if(cell.getStringCellValue().isEmpty()){
+            return null;
+        }
+        return cell.getStringCellValue();
     }
 }
