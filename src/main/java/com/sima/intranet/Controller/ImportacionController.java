@@ -43,7 +43,7 @@ public class ImportacionController {
 
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            importador.procesarImportacionNomina(String.valueOf(targetPath));
+            importador.procesarImportacion(String.valueOf(targetPath));
 
             return ResponseEntity.ok("Archivo cargado con éxito.");
         } catch (IOException e) {

@@ -1,8 +1,11 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Entity.Dia;
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Interface.DiaInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,9 @@ public class EmpleadoController {
 
     @Autowired
     EmpleadoInterface iEmpleadoService;
+
+    @Autowired
+    DiaInterface diaService;
   /*
    @GetMapping("/traer")
   public ResponseEntity<List<Empleado>> getAllEmpleados(@RequestParam(required = false) String nombre) {
@@ -103,5 +109,13 @@ public class EmpleadoController {
         return iEmpleadoService.getCantidadNominaPorSindicado();
     }
 
+    @GetMapping("/grilla")
+    public List<Dia> getGrillaDelMesAnio(@RequestParam Integer mes , @RequestParam Integer anio, @RequestParam Long id){
+        mes--;
+        LocalDate fechaInicio = LocalDate.of(anio, mes,1);
+        LocalDate fechaFinal = LocalDate.of(anio, mes+1,1).minusDays(1);
 
+        List<Dia> grilla = diaService.buscarGrillaEmpleadoEntreFechas(fechaInicio ,fechaFinal , id);
+        return grilla;
+    }
 }

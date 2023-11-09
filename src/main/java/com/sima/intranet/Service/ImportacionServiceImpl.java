@@ -1,20 +1,16 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Credencial;
+import com.sima.intranet.Entity.Dia;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Oferta;
-import com.sima.intranet.Enumarable.Gerencia;
-import com.sima.intranet.Enumarable.Jurisdiccion;
-import com.sima.intranet.Enumarable.Sindicato;
-import com.sima.intranet.Enumarable.TipoCredencial;
-import com.sima.intranet.Interface.CredencialInterface;
-import com.sima.intranet.Interface.EmpleadoInterface;
-import com.sima.intranet.Interface.ImportacionInterface;
-import com.sima.intranet.Interface.OfertaInterface;
+import com.sima.intranet.Enumarable.*;
+import com.sima.intranet.Interface.*;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +35,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     @Autowired
     private OfertaInterface ofertaService;
+
+    @Autowired
+    private DiaInterface diaService;
 
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
@@ -75,12 +74,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_OFERTAS_EMPLEO = List.of("EMPRESA","CODIGO","ZONA","TITULO" ,"BREVE DESCRIPCION" ,"REQUISITOS" , "SE OFRECE");
 
+
+    public static final List<String> FORMATO_GRILLA = List.of("GRILLA");
+
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
      * @param ruta
      */
     @Async
-    public void procesarImportacionNomina(String ruta) {
+    public void procesarImportacion(String ruta) {
         try {
             FileInputStream excelFile = new FileInputStream(ruta);
             Workbook workbook = new XSSFWorkbook(excelFile);
@@ -90,7 +92,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             List<String> cabezera = new ArrayList<>();
 
             for (Cell cell : sheet.getRow(0)) {
-                cabezera.add(cell.getStringCellValue().trim());
+                cabezera.add(getStringValorCelda(cell));
             }
             System.out.println(cabezera);
 
@@ -110,6 +112,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_OFERTAS_EMPLEO.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO OFERTAS EMPLEO.");
                 insertarFomatoOfertasEmpleo(sheet);
+            } else if(cabezera.containsAll(FORMATO_GRILLA)){
+                logger.info("Actualiacion de FORMATO OFERTAS GRILLA.");
+                insertarFormatoGrilla(sheet);
             }else{
                 cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
@@ -121,6 +126,55 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         } catch (IOException e) {
             logger.error(e.getMessage());
             logger.error("Error al intentar realizar la importacion.");
+        }
+
+    }
+
+    private void insertarFormatoGrilla(Sheet sheet) {
+        Cell primeraFecha = sheet.getRow(0).getCell(1);
+        if(primeraFecha == null){
+            logger.error("Primera fecha no encontrada.");
+            return;
+        }
+        primeraFecha.setCellType(CellType.STRING);
+        LocalDate fechaInicio = getLocalDateFromExcelNumeric(Double.valueOf(primeraFecha.getStringCellValue()));
+
+        for(Row row : sheet){
+            if(row.getRowNum()<3){
+                continue;
+            }
+            String dni = getStringValorCelda(row.getCell(0));
+            if(dni == null || dni.isEmpty()){
+                logger.error("DNI no ENCONTRADO. row:"+ row.getRowNum());
+                continue;
+            }
+            Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
+
+            if(!empleadoOpt.isPresent()){
+                logger.error("Empleado no encontrado : " + dni);
+                continue;
+            }
+            Integer cantidadDias = 0;
+            List<Dia> diasIngresados = new ArrayList<>();
+            for (Cell cell : row) {
+                if(cell.getColumnIndex()>2 && cell.getColumnIndex()<33){
+                    String estadoString = getStringValorCelda(cell);
+                    EstadoDia estado =  EstadoDia.getEstadoDiaImportacion(estadoString);
+                    if(estado!=null){
+                        LocalDate fechaAplica = fechaInicio.plusDays(cantidadDias);
+                        Dia dia = diaService.buscarPorFechaYEmpleado(fechaAplica , empleadoOpt.get()).orElse(new Dia());
+                        dia.setEmpleado(empleadoOpt.get());
+                        dia.setFecha(fechaAplica);
+                        dia.setEstado(estado);
+                        diasIngresados.add(dia);
+                    }
+                    if(estadoString != null){
+                        logger.error("ESTADO NO RECONOCIDO : " + estadoString);
+                    }
+                    cantidadDias++;
+                }
+            }
+            diaService.saveAll(diasIngresados);
         }
 
     }
@@ -538,6 +592,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         if(cell.getStringCellValue().isEmpty()){
             return null;
         }
-        return cell.getStringCellValue();
+        return cell.getStringCellValue().trim();
     }
 }
