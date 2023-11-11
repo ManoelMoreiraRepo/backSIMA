@@ -26,7 +26,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
     
     @Override
     public Page<Empleado> findEmpleado(Pageable pageable, String nombreEmpleado) {
-        return iEmpleadoRepository.findByPorNombreyApellido(pageable , nombreEmpleado);
+        return iEmpleadoRepository.findByPorNombreyApellidoDNI(pageable , nombreEmpleado);
     }
     
     @Override

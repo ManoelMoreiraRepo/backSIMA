@@ -111,9 +111,14 @@ public class EmpleadoController {
 
     @GetMapping("/grilla")
     public List<Dia> getGrillaDelMesAnio(@RequestParam Integer mes , @RequestParam Integer anio, @RequestParam Long id){
-        mes--;
         LocalDate fechaInicio = LocalDate.of(anio, mes,1);
-        LocalDate fechaFinal = LocalDate.of(anio, mes+1,1).minusDays(1);
+        if((mes+1)>12){
+            mes=1;
+            anio++;
+        }else{
+            mes++;
+        }
+        LocalDate fechaFinal = LocalDate.of(anio, mes,1).minusDays(1);
 
         List<Dia> grilla = diaService.buscarGrillaEmpleadoEntreFechas(fechaInicio ,fechaFinal , id);
         return grilla;
