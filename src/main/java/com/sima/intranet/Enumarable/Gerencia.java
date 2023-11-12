@@ -24,6 +24,9 @@ public enum Gerencia {
     }
 
     public static Gerencia getGerencia(String dato){
+        if(dato==null){
+            return null;
+        }
         for(Gerencia g : Gerencia.values()){
             if(g.codigo.equalsIgnoreCase(dato.replace(" " , ""))){
                 return g;

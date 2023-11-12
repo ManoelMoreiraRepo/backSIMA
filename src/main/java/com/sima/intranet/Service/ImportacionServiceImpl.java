@@ -1,9 +1,6 @@
 package com.sima.intranet.Service;
 
-import com.sima.intranet.Entity.Credencial;
-import com.sima.intranet.Entity.Dia;
-import com.sima.intranet.Entity.Empleado;
-import com.sima.intranet.Entity.Oferta;
+import com.sima.intranet.Entity.*;
 import com.sima.intranet.Enumarable.*;
 import com.sima.intranet.Interface.*;
 import jakarta.transaction.Transactional;
@@ -38,6 +35,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     @Autowired
     private DiaInterface diaService;
+
+    @Autowired
+    private MovilInterface movilService;
+
+    @Autowired
+    private InfraccionInterface infraccionService;
 
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
@@ -77,6 +80,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_GRILLA = List.of("GRILLA");
 
+    public static final List<String> FORMATO_INSERSION_MOVILES = List.of("Nro" , "DOMINIO" , "ESTADO" , "ASIGNADO A:" , "DESTINO" , "COD.GERENCIA");
+
+    public static final List<String> FORMATO_INFRACCIONES = List.of("Marca temporal", "ACTA Nro.", "SECCIÓN", "Dirección de correo electrónico", "FECHA del Acta",
+            "PATENTE Nro", "GERENCIA Operativa", "Importe", "Motivo", "Link de la Multa", "ENVIAR A:", "ASIGNADA A:", "FECHA", "DNI",
+            "FORMA DE PAGO", "COMPROBANTE DE PAGO", "CIERRE DE ACTA", "NOTAS");
+
+
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
      * @param ruta
@@ -115,6 +125,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             } else if(cabezera.containsAll(FORMATO_GRILLA)){
                 logger.info("Actualiacion de FORMATO OFERTAS GRILLA.");
                 insertarFormatoGrilla(sheet);
+            } else if(FORMATO_INSERSION_MOVILES.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO INSERSION_MOVILES.");
+                insertarFomatoMoviles(sheet);
+            }else if(FORMATO_INFRACCIONES.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO INFRACCIONES.");
+                insertarFormatoInfracciones(sheet);
             }else{
                 cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
@@ -130,6 +146,106 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
+    /**
+     * Realiza el cruce de informacion entre Movil y infracciones.
+     * @param sheet
+     */
+    private void insertarFormatoInfracciones(Sheet sheet) {
+        List<Infraccion> infraccionList = new ArrayList<>();
+        for(Row row :sheet){
+            if(row.getRowNum() == 0){
+                continue;
+            }
+            String dominio = getStringValorCelda(row.getCell(5));
+            if(dominio==null){
+                logger.error("Dominio no encontrado. Row NRO : " + row.getRowNum());
+                continue;
+            }
+
+            Optional<Movil> movil = movilService.getByDominio(dominio);
+
+            if(!movil.isPresent()){
+                logger.error("No se encontro el movil para poder cruzar la informacion. Dominio: " + dominio);
+                continue;
+            }
+
+            String numeroActa = getStringValorCelda(row.getCell(1));
+
+            if(numeroActa == null){
+                logger.error("No se encontro el numero de acta. Row numero : " + row.getRowNum());
+                continue;
+            }
+
+            Infraccion infraccion = infraccionService.buscarPorNumeroActa(numeroActa).orElse(new Infraccion());
+
+            infraccion.setNumero(numeroActa);
+
+            Cell cellFechaActua = row.getCell(4);
+            try {
+                if(cellFechaActua.getDateCellValue()!=null){
+                    if(!cellFechaActua.getCellType().equals(CellType.NUMERIC)){
+                        infraccion.setFechaActa(getLocalDateFromExcel(cellFechaActua.getDateCellValue()));
+                    }else{
+                        infraccion.setFechaActa(getLocalDateFromExcelNumeric(cellFechaActua.getNumericCellValue()));
+                    }
+                }
+
+            }catch (IllegalStateException e){
+                logger.error("Fecha de acta invalida, Acta NRO :  " + numeroActa);
+            }
+
+            infraccion.setMovil(movil.get());
+            infraccion.setImporte(getBigDecimalFromExcel(row.getCell(7)));
+            infraccion.setMotivo(getStringValorCelda(row.getCell(8)));
+            infraccion.setAsignado(getStringValorCelda(row.getCell(11)));
+            infraccion.setFormaPago(getStringValorCelda(row.getCell(14)));
+            infraccion.setEstado(EstadoInfraccion.getEstadoParaImportacion(getStringValorCelda(row.getCell(16))));
+
+            infraccionList.add(infraccion);
+        }
+        infraccionService.saveAll(infraccionList);
+    }
+
+
+    /**
+     * Ingresa la informacion de los moviles existentes.
+     * @param sheet
+     */
+    private void insertarFomatoMoviles(Sheet sheet) {
+        List<Movil> moviles = new ArrayList<>();
+        for(Row row : sheet) {
+            if (row.getRowNum() == 0) {
+                continue;
+            }
+
+            String dominio = getStringValorCelda(row.getCell(1));
+
+            if(dominio  == null){
+                logger.error("Dominio no encontrado.");
+                continue;
+            }
+
+            Movil movil = movilService.getByDominio(dominio).orElse(new Movil());
+
+            movil.setNumero(getStringValorCelda(row.getCell(0)));
+            movil.setDominio(dominio);
+            movil.setEstado(EstadoMovil.getEstadoMovilImportacion(getStringValorCelda(row.getCell(2))));
+            movil.setAsignado(getStringValorCelda(row.getCell(3)));
+            movil.setDestino(getStringValorCelda(row.getCell(4)));
+            movil.setGerencia(Gerencia.getGerencia(getStringValorCelda(row.getCell(5))));
+
+            moviles.add(movil);
+
+        }
+
+        movilService.saveAll(moviles);
+
+    }
+
+    /**
+     * Ingresa la grilla de un empleado.
+     * @param sheet
+     */
     private void insertarFormatoGrilla(Sheet sheet) {
         Cell primeraFecha = sheet.getRow(0).getCell(1);
         if(primeraFecha == null){
@@ -179,6 +295,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
+    /**
+     * Ingresa las ofertas de empleo.
+     * @param sheet
+     */
     private void insertarFomatoOfertasEmpleo(Sheet sheet) {
         List<Oferta> ofertas = new ArrayList<>();
         for(Row row : sheet){
@@ -271,27 +391,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
     }
 
-    private LocalDate getLocalDateFromExcel(Date dateCellValue) {
 
-        if(dateCellValue == null){
-            return null;
-        }
-
-        return dateCellValue.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-    }
-
-    private LocalDate getLocalDateFromExcelNumeric(Double dateCellValue) {
-
-        if(dateCellValue == null){
-            return null;
-        }
-        return DateUtil.getJavaDate(dateCellValue).toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-    }
 
     /**
      * Realiza la insercion de dato sueldo total para los empleado que ya encuentran en la base de datos.
@@ -593,5 +693,38 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             return null;
         }
         return cell.getStringCellValue().trim();
+    }
+
+    private BigDecimal getBigDecimalFromExcel(Cell cell) {
+        if(cell == null){
+            return null;
+        }
+        if(cell.getCellType().equals(CellType.NUMERIC)){
+            return BigDecimal.valueOf(cell.getNumericCellValue());
+        }else{
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private LocalDate getLocalDateFromExcel(Date dateCellValue) {
+
+        if(dateCellValue == null){
+            return null;
+        }
+
+        return dateCellValue.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+    }
+
+    private LocalDate getLocalDateFromExcelNumeric(Double dateCellValue) {
+
+        if(dateCellValue == null){
+            return null;
+        }
+        return DateUtil.getJavaDate(dateCellValue).toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 }
