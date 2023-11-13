@@ -3,6 +3,7 @@ package com.sima.intranet.Interface;
 import com.sima.intranet.Entity.Infraccion;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface InfraccionInterface {
@@ -11,4 +12,6 @@ public interface InfraccionInterface {
     void save(Infraccion infraccion);
 
     void saveAll(List<Infraccion> infraccionList);
+
+    Map getEstadisticas();
 }
