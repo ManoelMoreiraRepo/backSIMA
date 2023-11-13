@@ -62,7 +62,7 @@ public class InfraccionServicio implements InfraccionInterface {
             Integer pagada = 0;
             Integer noPagada = 0;
             for(Infraccion i : infracciones){
-                importeTotal.add(i.getImporte());
+                importeTotal = importeTotal.add(i.getImporte());
                 if(i.getAsignado()!=null && !i.getAsignado().isEmpty()){
                     con++;
                 }else {
