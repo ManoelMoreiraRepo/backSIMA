@@ -20,13 +20,19 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
     EmpleadoRepository iEmpleadoRepository;
 
     @Override
-    public Page<Empleado> getEmpleados(Pageable pageable) {
-        return iEmpleadoRepository.findAll(pageable);
+    public Page<Empleado> getEmpleados(Pageable pageable, Gerencia gerencia) {
+        if(gerencia == null){
+            return iEmpleadoRepository.findAll(pageable);
+        }
+        return iEmpleadoRepository.findByGerencia( pageable , gerencia);
     }
     
     @Override
-    public Page<Empleado> findEmpleado(Pageable pageable, String nombreEmpleado) {
-        return iEmpleadoRepository.findByPorNombreyApellidoDNI(pageable , nombreEmpleado);
+    public Page<Empleado> findEmpleado(Pageable pageable, String nombreEmpleado, Gerencia gerencia) {
+        if(gerencia == null){
+            return iEmpleadoRepository.findByPorNombreyApellidoDNI(pageable , nombreEmpleado);
+        }
+        return iEmpleadoRepository.findByPorNombreyApellidoDNIGerencia(pageable , nombreEmpleado , gerencia);
     }
     
     @Override
@@ -106,7 +112,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
                 // Agregar un registro con cantidad 0 para gerencias que no están en la consulta
                 String descripcion = String.format("%s   NOMINA ACTIVA", g.codigo);
                 String titulo = g.descrip;
-                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion));
+                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion , "url" , "/empleado?gerencia="+g.name()));
             }
         }
 
@@ -120,7 +126,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
             if (gerencia != null) {
                 String descripcion = String.format("%s   NOMINA ACTIVA", gerencia.codigo);
                 String titulo = gerencia.descrip;
-                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion));
+                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion ,"url" , "/empleado?gerencia="+gerencia.name()));
             }
         }
 

@@ -2,6 +2,7 @@ package com.sima.intranet.Controller;
 
 import com.sima.intranet.Entity.Dia;
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Interface.DiaInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 
@@ -59,11 +60,11 @@ public class EmpleadoController {
   
     @GetMapping("/traer")
     public Page<Empleado> getEmpleados(@PageableDefault(size = 20 ) Pageable pageable) {
-        return iEmpleadoService.getEmpleados(pageable);
+        return iEmpleadoService.getEmpleados(pageable, null);
     }
 
     @GetMapping("/search")
-    public Page<Empleado> searchEmployeesByName(@PageableDefault(size = 20 ) Pageable pageable, @RequestParam("nombreEmpleado")String nombreEmpleado , @RequestParam String ordenado , @RequestParam String orden ) {
+    public Page<Empleado> searchEmployeesByName(@PageableDefault(size = 20 ) Pageable pageable, @RequestParam("nombreEmpleado")String nombreEmpleado , @RequestParam String ordenado , @RequestParam String orden , @RequestParam String gerencia) {
         if(!ordenado.isEmpty() && !orden.isEmpty()){
             if(orden.equals("ASC")){
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.ASC, ordenado));
@@ -72,12 +73,16 @@ public class EmpleadoController {
             }
 
         }
-
-         if(nombreEmpleado.isBlank()){
-            return iEmpleadoService.getEmpleados(pageable);
+        Gerencia g = null;
+        if(gerencia != null && !gerencia.isEmpty()){
+            g = Gerencia.valueOf(gerencia);
         }
 
-        return iEmpleadoService.findEmpleado(pageable , nombreEmpleado.trim().toLowerCase());
+         if(nombreEmpleado.isBlank()){
+            return iEmpleadoService.getEmpleados(pageable , g);
+        }
+
+        return iEmpleadoService.findEmpleado(pageable , nombreEmpleado.trim().toLowerCase() , g);
     }
 
     @PostMapping("/nuevo")
