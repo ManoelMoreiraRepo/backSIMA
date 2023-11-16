@@ -544,6 +544,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 continue;
             }
             Cell celdaDni = row.getCell(25);
+            if(celdaDni == null ){
+                continue;
+            }
             celdaDni.setCellType(CellType.STRING);
             String dni = celdaDni.getStringCellValue();
             if(dni.isEmpty()){
