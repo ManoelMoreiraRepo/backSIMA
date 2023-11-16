@@ -1,16 +1,15 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Infraccion;
+import com.sima.intranet.Entity.Movil;
 import com.sima.intranet.Enumarable.EstadoInfraccion;
+import com.sima.intranet.Enumarable.EstadoMovil;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Interface.InfraccionInterface;
 import com.sima.intranet.Repository.InfraccionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,6 +92,20 @@ public class InfraccionServicio implements InfraccionInterface {
 
 
 
+    }
+
+    @Override
+    public List<Long> getActivosPorGerencia() {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<Movil> root = query.from(Movil.class);
+        List<Predicate> cond = new ArrayList<>();
+        cond.add(builder.equal(root.get("estado") , EstadoMovil.ACTIVO));
+        query.where(cond.toArray(Predicate[]::new));
+        query.groupBy(root.get("gerencia"));
+        Selection<Long> cantidad = builder.count(root.get("id"));
+        query.select(cantidad);
+        return entityManager.createQuery(query).getResultList();
     }
 
 

@@ -152,6 +152,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
      */
     private void insertarFormatoInfracciones(Sheet sheet) {
         List<Infraccion> infraccionList = new ArrayList<>();
+        Set<String> numeros = new HashSet<>();
         for(Row row :sheet){
             if(row.getRowNum() == 0){
                 continue;
@@ -176,7 +177,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 continue;
             }
 
-            Infraccion infraccion = infraccionService.buscarPorNumeroActa(numeroActa).orElse(new Infraccion());
+            if(numeros.contains(numeroActa.trim())){
+                continue;
+            }else{
+                numeros.add(numeroActa.trim());
+            }
+
+            Infraccion infraccion = infraccionService.buscarPorNumeroActa(numeroActa.trim()).orElse(new Infraccion());
 
             infraccion.setNumero(numeroActa);
 

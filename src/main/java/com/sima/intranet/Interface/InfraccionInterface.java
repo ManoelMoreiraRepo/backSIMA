@@ -14,4 +14,6 @@ public interface InfraccionInterface {
     void saveAll(List<Infraccion> infraccionList);
 
     Map getEstadisticas();
+
+    List<Long> getActivosPorGerencia();
 }
