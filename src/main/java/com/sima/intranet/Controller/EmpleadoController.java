@@ -2,6 +2,7 @@ package com.sima.intranet.Controller;
 
 import com.sima.intranet.Entity.Dia;
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Entity.Mensaje;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Interface.DiaInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
@@ -35,23 +36,7 @@ public class EmpleadoController {
 
     @Autowired
     DiaInterface diaService;
-  /*
-   @GetMapping("/traer")
-  public ResponseEntity<List<Empleado>> getAllEmpleados(@RequestParam(required = false) String nombre) {
-    List<Empleado> empleados = new ArrayList<Empleado>();
 
-    if (nombre == null)
-      iEmpleadoService.getEmpleados().forEach(empleados::add);
-    else
-      iEmpleadoService.findEmpleado(nombre).forEach(empleados::add);
-
-    if (empleados.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    return new ResponseEntity<>(empleados, HttpStatus.OK);
-  }
-  */
      @GetMapping("/detail/{id}")
     public Empleado getEmpleado(@PathVariable long id) {
         return iEmpleadoService.findEmpleado(id);
@@ -127,5 +112,11 @@ public class EmpleadoController {
 
         List<Dia> grilla = diaService.buscarGrillaEmpleadoEntreFechas(fechaInicio ,fechaFinal , id);
         return grilla;
+    }
+
+    @DeleteMapping("/borrar/{id}")
+    public Mensaje borrarEmpleado(@PathVariable Long id){
+         iEmpleadoService.deleteEmpleado(id);
+         return new Mensaje("Empleado borrado correctamente.");
     }
 }
