@@ -1,9 +1,9 @@
 package com.sima.intranet.Enumarable;
 
 public enum EstadoDia {
-    TURNO_MANANA("A"),
-    TURNO_TARDE("B"),
-    TURNO_NOCHE("C"),
+    MAÑANA("A"),
+    TARDE("B"),
+    NOCHE("C"),
     AUSENTE_ENFERMEDAD("AE"),
     SUSPENCION("SUSP"),
     CURSO("CUR"),
