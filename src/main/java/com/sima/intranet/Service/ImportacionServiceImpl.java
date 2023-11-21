@@ -291,7 +291,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         dia.setEstado(estado);
                         diasIngresados.add(dia);
                     }
-                    if(estadoString != null){
+                    if(estadoString != null && estado == null){
                         logger.error("ESTADO NO RECONOCIDO : " + estadoString);
                     }
                     cantidadDias++;
