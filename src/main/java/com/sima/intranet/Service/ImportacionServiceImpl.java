@@ -42,6 +42,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     @Autowired
     private InfraccionInterface infraccionService;
 
+
+    @Autowired
+    private IndumentariaServiceImpl indumentariaService;
+
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
@@ -82,9 +86,18 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_INSERSION_MOVILES = List.of("Nro" , "DOMINIO" , "ESTADO" , "ASIGNADO A:" , "DESTINO" , "COD.GERENCIA");
 
-    public static final List<String> FORMATO_INFRACCIONES = List.of("Marca temporal", "ACTA Nro.", "SECCIÓN", "Dirección de correo electrónico", "FECHA del Acta",
-            "PATENTE Nro", "GERENCIA Operativa", "Importe", "Motivo", "Link de la Multa", "ENVIAR A:", "ASIGNADA A:", "FECHA", "DNI",
-            "FORMA DE PAGO", "COMPROBANTE DE PAGO", "CIERRE DE ACTA", "NOTAS");
+    public static final List<String> FORMATO_INFRACCIONES = List.of(
+            "AÑO", "MES", "Marca temporal", "ACTA Nro.", "SECCIÓN", "Dirección de correo electrónico",
+            "FECHA del Acta", "PATENTE Nro", "GERENCIA Operativa", "CodGer", "Importe", "Motivo",
+            "Link de la Multa", "FECHA", "ACTA Nro.", "ASIGNADA A:", "DNI", "FORMA DE PAGO",
+            "COMPROBANTE DE PAGO", "ENVIAR A:", "CIERRE DE ACTA", "NOTAS"
+    );
+
+
+    public static final List<String> FORMATO_INDUMENTARIA = List.of(
+            "Apellido y Nombre", "LEGAJO", "DNI", "Ndoc", "NOMINA ACTIVA",
+            "PRODUCTO", "MODELO", "TALLE", "CANT.", "FECHA"
+    );
 
 
     /**
@@ -131,6 +144,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_INFRACCIONES.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INFRACCIONES.");
                 insertarFormatoInfracciones(sheet);
+            }else if(FORMATO_INDUMENTARIA.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO INFRACCIONES.");
+                insertarFormatoIndumentaria(sheet);
             }else{
                 cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 logger.info("El formato de este excel no esta implementado.");
@@ -146,6 +162,65 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
+    private void insertarFormatoIndumentaria(Sheet sheet) {
+        List<Indumentaria> indumentariaList = new ArrayList<>();
+        for(Row row :sheet){
+            if(row.getRowNum() == 0){
+                continue;
+            }
+
+            String dni = getStringValorCelda(row.getCell(0));
+
+            if(dni == null){
+                logger.error("Dni no encontrado. row nro : " + row.getRowNum());
+                continue;
+            }
+
+            Optional<Empleado> empleado = empledoService.findByDNI(dni.trim());
+
+            if(!empleado.isPresent()){
+                logger.error("Empleado no encontrado para realizar el cruce de informacion.");
+                continue;
+            }
+
+            Cell cellFechaActua = row.getCell(6);
+            LocalDate fechaEntrega = null;
+            try {
+                if(cellFechaActua.getDateCellValue()!=null){
+                    if(!cellFechaActua.getCellType().equals(CellType.NUMERIC)){
+                        fechaEntrega = getLocalDateFromExcel(cellFechaActua.getDateCellValue());
+                    }else{
+                        fechaEntrega = getLocalDateFromExcelNumeric(cellFechaActua.getNumericCellValue());
+                    }
+                }
+
+            }catch (IllegalStateException e){
+                logger.error("Fecha de acta invalida, Row nro :  " + row.getRowNum());
+            }
+
+            if(fechaEntrega == null){
+                logger.error("fecha invalida");
+                continue;
+            }
+            Indumentaria indu = indumentariaService.findByEmpleadoAndFechaEntrega(empleado.get() , fechaEntrega).orElse(new Indumentaria());
+
+            indu.setEmpleado(empleado.get());
+            indu.setFechaUltimaEntregaIndumentaria(fechaEntrega);
+            indu.setFechaProximaEntregaIndumentaria(fechaEntrega.plusYears(1));
+
+            indu.setNombreIndumentaria(getStringValorCelda(row.getCell(2)));
+            indu.setModeloIndumentaria(getStringValorCelda(row.getCell(3)));
+            indu.setTalleIndumentaria(getStringValorCelda(row.getCell(4)));
+            if(row.getCell(5)!=null){
+                indu.setCantidad(Double.valueOf(row.getCell(5).getNumericCellValue()).longValue());
+            }
+            indumentariaList.add(indu);
+        }
+
+        indumentariaService.saveAll(indumentariaList);
+
+    }
+
     /**
      * Realiza el cruce de informacion entre Movil y infracciones.
      * @param sheet
@@ -157,7 +232,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(row.getRowNum() == 0){
                 continue;
             }
-            String dominio = getStringValorCelda(row.getCell(5));
+            String dominio = getStringValorCelda(row.getCell(7));
             if(dominio==null){
                 logger.error("Dominio no encontrado. Row NRO : " + row.getRowNum());
                 continue;
@@ -170,7 +245,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 continue;
             }
 
-            String numeroActa = getStringValorCelda(row.getCell(1));
+            String numeroActa = getStringValorCelda(row.getCell(3));
 
             if(numeroActa == null){
                 logger.error("No se encontro el numero de acta. Row numero : " + row.getRowNum());
@@ -187,7 +262,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
             infraccion.setNumero(numeroActa);
 
-            Cell cellFechaActua = row.getCell(4);
+            Cell cellFechaActua = row.getCell(6);
             try {
                 if(cellFechaActua.getDateCellValue()!=null){
                     if(!cellFechaActua.getCellType().equals(CellType.NUMERIC)){
@@ -202,11 +277,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
 
             infraccion.setMovil(movil.get());
-            infraccion.setImporte(getBigDecimalFromExcel(row.getCell(7)));
-            infraccion.setMotivo(getStringValorCelda(row.getCell(8)));
-            infraccion.setAsignado(getStringValorCelda(row.getCell(11)));
-            infraccion.setFormaPago(getStringValorCelda(row.getCell(14)));
-            infraccion.setEstado(EstadoInfraccion.getEstadoParaImportacion(getStringValorCelda(row.getCell(16))));
+            infraccion.setImporte(getBigDecimalFromExcel(row.getCell(10)));
+            infraccion.setMotivo(getStringValorCelda(row.getCell(11)));
+            infraccion.setAsignado(getStringValorCelda(row.getCell(15)));
+            infraccion.setFormaPago(getStringValorCelda(row.getCell(17)));
+            infraccion.setEstado(EstadoInfraccion.getEstadoParaImportacion(getStringValorCelda(row.getCell(20))));
 
             infraccionList.add(infraccion);
         }
@@ -565,7 +640,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else{
                 dnis.add(dni.trim());
             }
-            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
+            Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni.trim()));
             Gerencia gerencia = null;
             for (Cell cell : row) {
                 try {

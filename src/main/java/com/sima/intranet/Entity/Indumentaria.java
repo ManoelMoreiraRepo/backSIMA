@@ -12,7 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDate;
-import java.util.Date;
+
 import lombok.Data;
 
 @Entity
@@ -20,19 +20,25 @@ import lombok.Data;
 public class Indumentaria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idIndumentaria;
-    
-    /*@Column
-    private String CodigoIndumentaria
-    */        
-    @Column
-    private String tipoIndumentaria;
+    private Long id;
+
+   /* @Column
+    private String tipoIndumentaria;*/
     
     @Column
     private String nombreIndumentaria;
+
+    @Column
+    private String tipoIndumentaria;
+
+    @Column
+    private Long cantidad;
     
     @Column
     private String talleIndumentaria;
+
+    @Column
+    private String modeloIndumentaria;
     
     @Column
     private LocalDate fechaUltimaEntregaIndumentaria;

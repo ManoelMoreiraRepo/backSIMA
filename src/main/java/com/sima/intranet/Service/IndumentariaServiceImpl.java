@@ -1,8 +1,11 @@
 package com.sima.intranet.Service;
 
+import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Indumentaria;
 import com.sima.intranet.Interface.IndumentariaInterface;
 import com.sima.intranet.Repository.IndumentariaRepository;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +35,7 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
 
     @Override
     public Indumentaria modifyIndumentaria(Indumentaria indumentaria) {
-        Optional<Indumentaria> indumentariaEncontrada = this.rIndumentaria.findById(indumentaria.getIdIndumentaria());
+        Optional<Indumentaria> indumentariaEncontrada = this.rIndumentaria.findById(indumentaria.getId());
 
         if (indumentariaEncontrada.get() != null) {
             indumentariaEncontrada.get().setNombreIndumentaria(indumentaria.getNombreIndumentaria());
@@ -52,6 +55,16 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
     @Override
     public List<Indumentaria> listByIdEmpleado(Long idEmpleado) {
         return this.rIndumentaria.listByIdIndumentaria(idEmpleado);
+    }
+
+    @Override
+    public Optional<Indumentaria> findByEmpleadoAndFechaEntrega(Empleado empleado, LocalDate fecha) {
+        return this.rIndumentaria.findByEmpleadoAndFechaUltimaEntregaIndumentaria(empleado,fecha);
+    }
+
+    @Override
+    public void saveAll(List<Indumentaria> indumentariaList) {
+        this.rIndumentaria.saveAll(indumentariaList);
     }
 
 }

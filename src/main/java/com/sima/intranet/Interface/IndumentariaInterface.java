@@ -1,8 +1,12 @@
 
 package com.sima.intranet.Interface;
 
+import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Indumentaria;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface IndumentariaInterface {
@@ -18,4 +22,8 @@ public interface IndumentariaInterface {
     Boolean deleteIndumentaria(Long idIndumentaria);
     
     List<Indumentaria> listByIdEmpleado(Long idEmpleado);
+
+    Optional<Indumentaria> findByEmpleadoAndFechaEntrega(Empleado empleado , LocalDate fecha);
+
+    void saveAll(List<Indumentaria> indumentariaList);
 }
