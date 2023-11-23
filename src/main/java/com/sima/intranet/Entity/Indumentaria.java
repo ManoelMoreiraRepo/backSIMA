@@ -2,6 +2,7 @@
 package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sima.intranet.Enumarable.ConjuntoIndumentaria;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,6 +46,8 @@ public class Indumentaria {
      
     @Column
     private LocalDate fechaProximaEntregaIndumentaria;
+
+    private ConjuntoIndumentaria conjunto;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="idEmpleado")

@@ -214,6 +214,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(row.getCell(5)!=null){
                 indu.setCantidad(Double.valueOf(row.getCell(5).getNumericCellValue()).longValue());
             }
+            indu.setConjunto(ConjuntoIndumentaria.getConjuntoImportacion(getStringValorCelda(row.getCell(7))));
             indumentariaList.add(indu);
         }
 
