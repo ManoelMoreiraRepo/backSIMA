@@ -33,4 +33,6 @@ public interface EmpleadoInterface {
     List<Map<String,Object>> getCantidadNominaPorGerencia();
 
     List<Map<String,Object>> getCantidadNominaPorSindicado();
+
+    List<Map<String,Object>> getCountByEmpresa();
 }

@@ -1,13 +1,21 @@
 package com.sima.intranet.Service;
 
+import com.sima.intranet.Dao.EmpleadoDAO;
+import com.sima.intranet.Diccionario.Empleado_;
 import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.Empresa;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Sindicato;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.*;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +26,9 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
 
     @Autowired
     EmpleadoRepository iEmpleadoRepository;
+
+    @Autowired
+    EmpleadoDAO empleadoDAO;
 
     @Override
     public Page<Empleado> getEmpleados(Pageable pageable, Gerencia gerencia) {
@@ -166,6 +177,26 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
                 lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion));
             }
 
+        }
+
+        return lista;
+    }
+
+    @Override
+    public List<Map<String,Object>> getCountByEmpresa() {
+        List<Map<String,Object>> lista = new ArrayList<>();
+
+        for(Empresa empresa : Empresa.values()){
+            if(empresa.equals(Empresa.SIN_EMPRESA)){
+                continue;
+            }
+            Long result = empleadoDAO.getCantidadPorEmpresa(empresa.gerencias);
+            List<String> descrip = empresa.gerencias.stream().map(Gerencia::getCodigo).collect(Collectors.toList());
+            String descripcion = String.join(" / " , descrip);
+            if(descripcion.equals("")){
+                descripcion= "SIN GERENCIAS";
+            }
+            lista.add(Map.of("cant", result , "titulo", empresa.descripcion , "descrip", descripcion));
         }
 
         return lista;

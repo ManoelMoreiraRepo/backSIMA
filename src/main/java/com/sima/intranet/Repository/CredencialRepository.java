@@ -3,7 +3,6 @@ package com.sima.intranet.Repository;
 import com.sima.intranet.Entity.Credencial;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import com.sima.intranet.Entity.Empleado;
@@ -25,6 +24,6 @@ public interface CredencialRepository extends JpaRepository<Credencial,Long> {
     Long countCredencialByFechaVencimentoCredencialBeforeAndJurisdiccionAndGerenciaAndTipo(LocalDate fecha , Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo);
 
     Long countCredencialByFechaVencimentoCredencialBetweenAndJurisdiccionAndGerenciaAndTipo(LocalDate fecha1 , LocalDate fecha2 , Jurisdiccion jurisdiccion ,Gerencia gerencia , TipoCredencial tipo);
-    @Query("SELECT COUNT(e) FROM Empleado e WHERE (SELECT COUNT(c) FROM Credencial c WHERE c.empleado = e AND c.jurisdiccion =:jurisdiccion AND c.gerencia = :gerencia AND c.tipo = :tipo) = 0 AND e.gerencia =:gerencia ")
-    Long getCantidadNoAptos(Jurisdiccion jurisdiccion, Gerencia gerencia, TipoCredencial tipo);
+    @Query("SELECT COUNT(e) FROM Empleado e WHERE (SELECT COUNT(c) FROM Credencial c WHERE c.empleado = e AND c.jurisdiccion =:jurisdiccion AND c.gerencia = :gerencia AND c.tipo = :tipo AND c.fechaVencimentoCredencial > CURRENT_DATE ) > 0 AND e.gerencia =:gerencia ")
+    Long getCantidadAptos(Jurisdiccion jurisdiccion, Gerencia gerencia, TipoCredencial tipo);
 }

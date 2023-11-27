@@ -1,0 +1,32 @@
+package com.sima.intranet.Dao;
+
+import com.sima.intranet.Diccionario.Empleado_;
+import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.Gerencia;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.*;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+public class EmpleadoDAO {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public Long getCantidadPorEmpresa(List<Gerencia> gerencias){
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<Empleado> root = query.from(Empleado.class);
+        List<Predicate> cond = new ArrayList<>();
+
+        cond.add(root.get(Empleado_.GERENCIA).in(gerencias));
+
+        query.where(cond.toArray(new Predicate[0]));
+        Selection<Long> count = builder.count(root.get(Empleado_.ID));
+        query.select(count);
+        return entityManager.createQuery(query).getSingleResult();
+    }
+}

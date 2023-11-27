@@ -1,18 +1,23 @@
 package com.sima.intranet.Enumarable;
 
 
+import java.util.List;
 import java.util.Optional;
 public enum Empresa {
-    GRUPO_SIMA("GRUPO SIMA"),
-    LA_BIZANTINA("LA BIZANTINA"),
-    GPS("GPS"),
-    GLOBAL("GLOBAL"),
-    ECOKLIN("ECOKLIN"),
-    SIN_EMPRESA( "SIN EMPRESA");
+    COM01("GPS" , List.of(Gerencia.GER01, Gerencia.GER02, Gerencia.GER03)),
+    COM02("GLOBAL" , List.of(Gerencia.GER01 , Gerencia.GER02 , Gerencia.GER03 , Gerencia.GER04)),
+    COM03("LA BIZANTINA" , List.of(Gerencia.GER05)),
+    COM04("ECOKLIN" , List.of(Gerencia.GER06)),
+    COM05("HUB" , List.of()),
+    SIN_EMPRESA( "SIN EMPRESA" , List.of());
 
     public String descripcion;
-    Empresa(String descripcion){
+
+    public List<Gerencia> gerencias;
+
+    Empresa(String descripcion , List<Gerencia> gerencias ){
         this.descripcion = descripcion;
+        this.gerencias = gerencias;
     }
 
     public static Optional<Empresa> get(int ordinal){

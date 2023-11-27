@@ -89,8 +89,8 @@ public class EmpleadoController {
         return "El Empleado fue modificado correctamente";
     }
 
-    @GetMapping("/cantidadNominaEmpresa")
-    public List<Map<String,Object>> getCantidadNominaPorEmpresa(){
+    @GetMapping("/cantidadNominaGerencia")
+    public List<Map<String,Object>> getCantidadNominaPorGerencia(){
         return iEmpleadoService.getCantidadNominaPorGerencia();
     }
 
@@ -98,6 +98,13 @@ public class EmpleadoController {
     public List<Map<String,Object>> getCantidadNominaPorSindicato(){
         return iEmpleadoService.getCantidadNominaPorSindicado();
     }
+
+    @GetMapping("/cantidadNominaEmpresa")
+    public List<Map<String,Object>> getCantidadNominaPorEmpresa(){
+        return iEmpleadoService.getCountByEmpresa();
+    }
+
+
 
     @GetMapping("/grilla")
     public List<Dia> getGrillaDelMesAnio(@RequestParam Integer mes , @RequestParam Integer anio, @RequestParam Long id){

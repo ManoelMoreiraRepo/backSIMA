@@ -9,7 +9,6 @@ import com.sima.intranet.Interface.CredencialInterface;
 import com.sima.intranet.Repository.CredencialRepository;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,8 +86,8 @@ public class CredencialServiceImpl implements CredencialInterface {
         return this.rCredencial.countCredencialByFechaVencimentoCredencialBetweenAndJurisdiccionAndGerenciaAndTipo(fecha1,fecha2,jurisdiccion,gerencia , tipo);
     }
 
-    public Long getCantidadNoAptos(Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo){
-        return this.rCredencial.getCantidadNoAptos(jurisdiccion , gerencia , tipo);
+    public Long getCantidadAptos(Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo){
+        return this.rCredencial.getCantidadAptos(jurisdiccion , gerencia , tipo);
     }
 
     /**
@@ -99,11 +98,10 @@ public class CredencialServiceImpl implements CredencialInterface {
      * @return
      */
     public List<Long> getEstadisticaCredencial(LocalDate fechaReferencia,Jurisdiccion jurisdiccion , Gerencia gerencia , TipoCredencial tipo){
-       // Long vencidas = this.getCantidadCredencialesConVencimientoAnteriorA(fechaReferencia , jurisdiccion , gerencia , tipo);
-        Long vencidas = this.getCantidadNoAptos( jurisdiccion , gerencia , tipo);
-        Long proxMes = this.getCantidadCredencialesConVecimientoEntre(fechaReferencia , fechaReferencia.plusMonths(1) , jurisdiccion , gerencia , tipo);
-        Long prox3Meses = this.getCantidadCredencialesConVecimientoEntre(fechaReferencia.plusMonths(1) , fechaReferencia.plusMonths(4) , jurisdiccion , gerencia , tipo);
-        return List.of(vencidas , proxMes , prox3Meses);
+        Long vencidas = this.getCantidadCredencialesConVencimientoAnteriorA(fechaReferencia , jurisdiccion , gerencia , tipo);
+        Long aptos = this.getCantidadAptos( jurisdiccion , gerencia , tipo);
+        Long prox3Meses = this.getCantidadCredencialesConVecimientoEntre(fechaReferencia , fechaReferencia.plusMonths(4) , jurisdiccion , gerencia , tipo);
+        return List.of(aptos , vencidas , prox3Meses);
     }
 
 

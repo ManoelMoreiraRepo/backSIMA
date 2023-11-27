@@ -2,25 +2,22 @@ package com.sima.intranet.Enumarable;
 
 public enum Gerencia {
 
-    GER_001 ( "G01" , "GRUPO SIMA" , "GROUP" , Empresa.GRUPO_SIMA ),
-    GER_002 ( "G02" , "AEROPUERTOS" , "GPS" , Empresa.GPS),//GPS
-    GER_003 ( "G03" , "GLOBAL" , "GLOBAL" , Empresa.GLOBAL),
-    GER_004 ( "G04" , "EDENOR" , "GLOBAL" , Empresa.GLOBAL), // GLOBAL
-    GER_005 ( "G05" , "LA BIZANTINA" , "LA BIZANTINA" , Empresa.LA_BIZANTINA),
-    GER_006 ( "G06" , "ECOKLIN" , "ECOKLIN",Empresa.ECOKLIN);
+    GER01( "G01" , "GRUPO SIMA" , "GROUP"  ),
+    GER02( "G02" , "AEROPUERTOS" , "GPS" ),//GPS
+    GER03( "G03" , "GLOBAL" , "GLOBAL" ),
+    GER04( "G04" , "EDENOR" , "GLOBAL" ), // GLOBAL
+    GER05( "G05" , "LA BIZANTINA" , "LA BIZANTINA" ),
+    GER06( "G06" , "ECOKLIN" , "ECOKLIN" );
 
     public String descrip;
     public String codigo;
 
     public String codigoOfertasEmpleo;
 
-    public Empresa empresa;
-
-    Gerencia(String codigo , String descrip , String codigoOfertasEmpleo , Empresa empresa){
+    Gerencia(String codigo , String descrip , String codigoOfertasEmpleo){
         this.codigo = codigo;
         this.descrip = descrip;
         this.codigoOfertasEmpleo = codigoOfertasEmpleo;
-        this.empresa = empresa;
     }
 
     public static Gerencia getGerencia(String dato){
@@ -48,7 +45,10 @@ public enum Gerencia {
 
     }
 
-   /* Contador por gerencia:
+    public String getCodigo() {
+        return codigo;
+    }
+    /* Contador por gerencia:
     cod:001 Grupo sima-Operacio central
     cod:002 La biza - Edu
     cod:003 Edenor - Casteli
