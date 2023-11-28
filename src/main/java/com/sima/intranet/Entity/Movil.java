@@ -30,4 +30,6 @@ public class Movil {
     private String destino;
 
     private Gerencia gerencia;
+    @ManyToOne
+    private Empleado empleado;
 }

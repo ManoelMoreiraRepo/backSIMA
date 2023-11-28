@@ -84,7 +84,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_GRILLA = List.of("GRILLA");
 
-    public static final List<String> FORMATO_INSERSION_MOVILES = List.of("Nro" , "DOMINIO" , "ESTADO" , "ASIGNADO A:" , "DESTINO" , "COD.GERENCIA");
+    public static final List<String> FORMATO_INSERSION_MOVILES = List.of("Nro" , "DOMINIO" , "ESTADO" , "ASIGNADO A:" , "DESTINO" , "COD.GERENCIA","EMPLEADO");
 
     public static final List<String> FORMATO_INFRACCIONES = List.of(
             "AÑO", "MES", "Marca temporal", "ACTA Nro.", "SECCIÓN", "Dirección de correo electrónico",
@@ -317,8 +317,16 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             movil.setDestino(getStringValorCelda(row.getCell(4)));
             movil.setGerencia(Gerencia.getGerencia(getStringValorCelda(row.getCell(5))));
 
+            String dniEmpleado = getStringValorCelda(row.getCell(6));
+            if(dniEmpleado != null){
+                Optional<Empleado> empleado = empledoService.findByDNI(dniEmpleado);
+                if(empleado.isPresent()){
+                    movil.setEmpleado(empleado.get());
+                }else{
+                    logger.error("Empleado no encontrado. DNI : " + dniEmpleado);
+                }
+            }
             moviles.add(movil);
-
         }
 
         movilService.saveAll(moviles);

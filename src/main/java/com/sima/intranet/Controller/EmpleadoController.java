@@ -1,9 +1,11 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Dto.ApiResponse;
 import com.sima.intranet.Entity.Dia;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Mensaje;
 import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Filtro.FiltroEmpleado;
 import com.sima.intranet.Interface.DiaInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import com.sima.intranet.Util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -68,6 +71,13 @@ public class EmpleadoController {
         }
 
         return iEmpleadoService.findEmpleado(pageable , nombreEmpleado.trim().toLowerCase() , g);
+    }
+    @PostMapping("/buscar")
+    public ApiResponse buscarEmpleadosFiltro(@RequestBody FiltroEmpleado filtro){
+        List<Empleado> resultado = iEmpleadoService.findEmpleado(filtro);
+        ApiResponse respuesta = new ApiResponse(filtro);
+        respuesta.getContent().put("data" , resultado);
+        return respuesta;
     }
 
     @PostMapping("/nuevo")

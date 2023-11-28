@@ -2,6 +2,7 @@ package com.sima.intranet.Interface;
 
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Filtro.FiltroEmpleado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,4 +36,6 @@ public interface EmpleadoInterface {
     List<Map<String,Object>> getCantidadNominaPorSindicado();
 
     List<Map<String,Object>> getCountByEmpresa();
+
+    List<Empleado> findEmpleado(FiltroEmpleado filtro);
 }

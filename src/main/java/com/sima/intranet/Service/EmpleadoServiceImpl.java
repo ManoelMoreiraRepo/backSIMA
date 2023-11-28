@@ -6,6 +6,7 @@ import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Empresa;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Sindicato;
+import com.sima.intranet.Filtro.FiltroEmpleado;
 import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.EmpleadoRepository;
 
@@ -200,6 +201,11 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         }
 
         return lista;
+    }
+
+    @Override
+    public List<Empleado> findEmpleado(FiltroEmpleado filtro) {
+        return empleadoDAO.getListadoEmpleado(filtro);
     }
 
 
