@@ -10,5 +10,6 @@ public class Empleado_ {
 
     public static final String DNI = "DNIEmpleado";
 
+    public static final String OBJETIVO = "objetivoEmpleado";
 
 }
