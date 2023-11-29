@@ -202,7 +202,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 logger.error("fecha invalida");
                 continue;
             }
-            Indumentaria indu = indumentariaService.findByEmpleadoAndFechaEntrega(empleado.get() , fechaEntrega).orElse(new Indumentaria());
+            Indumentaria indu = new Indumentaria();
 
             indu.setEmpleado(empleado.get());
             indu.setFechaUltimaEntregaIndumentaria(fechaEntrega);
