@@ -27,9 +27,9 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(allowCredentials);
-       // config.addAllowedOrigin(allowedOrigins);
+        config.addAllowedOrigin(allowedOrigins);
        // config.addAllowedOrigin("https://5ggqz0cr-4200.brs.devtunnels.ms/");
-        config.setAllowedOriginPatterns(List.of(allowedOrigins ,"https://*.devtunnels.ms" ));
+       // config.setAllowedOriginPatterns(List.of(allowedOrigins));
         config.setMaxAge(maxAge);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
