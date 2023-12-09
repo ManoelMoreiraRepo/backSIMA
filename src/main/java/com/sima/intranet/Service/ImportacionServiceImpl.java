@@ -3,11 +3,11 @@ package com.sima.intranet.Service;
 import com.sima.intranet.Entity.*;
 import com.sima.intranet.Enumarable.*;
 import com.sima.intranet.Interface.*;
+import com.sima.intranet.Repository.LogImportacionRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -45,6 +46,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     @Autowired
     private IndumentariaServiceImpl indumentariaService;
+
+    @Autowired
+    private LogImportacionRepository logImportacionRepository;
 
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
@@ -102,10 +106,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
+     *
      * @param ruta
+     * @param nombreArchivo
      */
     @Async
-    public void procesarImportacion(String ruta) {
+    public void procesarImportacion(String ruta, String nombreArchivo) {
+        LogImportacion logImportacion = new LogImportacion(LocalDateTime.now() , nombreArchivo);
         try {
             FileInputStream excelFile = new FileInputStream(ruta);
             Workbook workbook = new XSSFWorkbook(excelFile);
@@ -113,56 +120,63 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Sheet sheet = workbook.getSheetAt(0);
 
             List<String> cabezera = new ArrayList<>();
-
+            if(sheet.getRow(0) == null){
+                throw new IOException("No se reconoce el formato , No se encontraron las cabezeras.");
+            }
             for (Cell cell : sheet.getRow(0)) {
                 cabezera.add(getStringValorCelda(cell));
             }
-            System.out.println(cabezera);
+           // System.out.println(cabezera);
 
 
             if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
                 logger.info("Actualiacion de FORMATO BEGERMAN iniciada.");
-                insertarFormatoBejerman(sheet);
+                insertarFormatoBejerman(sheet , logImportacion);
             } else if (cabezera.containsAll(FORMATO_SUELDO_NOMINA)) {
                 logger.info("Actualiacion de SUELDO.");
-                insertarFormatoSueldo(sheet);
+                insertarFormatoSueldo(sheet , logImportacion);
             } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO LEGAJO");
-                insertarFormatoLegajo(sheet);
+                insertarFormatoLegajo(sheet , logImportacion);
             } else if(FORMATO_CREDENCIALES.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO CREDENCIALES");
-                insertarFomatoCredenciales(sheet);
+                insertarFomatoCredenciales(sheet , logImportacion);
             }else if(FORMATO_OFERTAS_EMPLEO.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO OFERTAS EMPLEO.");
-                insertarFomatoOfertasEmpleo(sheet);
+                insertarFomatoOfertasEmpleo(sheet , logImportacion);
             } else if(cabezera.containsAll(FORMATO_GRILLA)){
                 logger.info("Actualiacion de FORMATO OFERTAS GRILLA.");
-                insertarFormatoGrilla(sheet);
+                insertarFormatoGrilla(sheet , logImportacion);
             } else if(FORMATO_INSERSION_MOVILES.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INSERSION_MOVILES.");
-                insertarFomatoMoviles(sheet);
+                insertarFomatoMoviles(sheet , logImportacion);
             }else if(FORMATO_INFRACCIONES.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INFRACCIONES.");
-                insertarFormatoInfracciones(sheet);
+                insertarFormatoInfracciones(sheet , logImportacion);
             }else if(FORMATO_INDUMENTARIA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INFRACCIONES.");
-                insertarFormatoIndumentaria(sheet);
+                insertarFormatoIndumentaria(sheet , logImportacion);
             }else{
-                cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
-                logger.info("El formato de este excel no esta implementado.");
-                System.out.println("Cabezeras no reconocidas");
-                System.out.println(cabezera);
+                //cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
+                //logger.info("El formato de este excel no esta implementado.");
+                //System.out.println("Cabezeras no reconocidas");
+                //System.out.println(cabezera);
+
             }
             workbook.close();
             excelFile.close();
         } catch (IOException e) {
             logger.error(e.getMessage());
             logger.error("Error al intentar realizar la importacion.");
+            logImportacion.addMensaje(e.getMessage());
+        }finally {
+            logImportacionRepository.save(logImportacion);
         }
 
     }
 
-    private void insertarFormatoIndumentaria(Sheet sheet) {
+    private void insertarFormatoIndumentaria(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO INDUMENTARIA.");
         List<Indumentaria> indumentariaList = new ArrayList<>();
         for(Row row :sheet){
             if(row.getRowNum() == 0){
@@ -172,6 +186,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             String dni = getStringValorCelda(row.getCell(0));
 
             if(dni == null){
+                logImportacion.addMensaje("Dni no encontrado. row nro : " + row.getRowNum());
                 logger.error("Dni no encontrado. row nro : " + row.getRowNum());
                 continue;
             }
@@ -179,7 +194,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Optional<Empleado> empleado = empledoService.findByDNI(dni.trim());
 
             if(!empleado.isPresent()){
-                logger.error("Empleado no encontrado para realizar el cruce de informacion.");
+                logImportacion.addMensaje("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni );
+                logger.error("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni);
                 continue;
             }
 
@@ -195,10 +211,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
 
             }catch (IllegalStateException e){
+                logImportacion.addMensaje("Fecha de acta invalida, Row nro :  " + row.getRowNum());
                 logger.error("Fecha de acta invalida, Row nro :  " + row.getRowNum());
             }
 
             if(fechaEntrega == null){
+                logImportacion.addMensaje("fecha invalida " + row.getRowNum());
                 logger.error("fecha invalida");
                 continue;
             }
@@ -224,9 +242,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Realiza el cruce de informacion entre Movil y infracciones.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFormatoInfracciones(Sheet sheet) {
+    private void insertarFormatoInfracciones(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO INFRACCIONES.");
         List<Infraccion> infraccionList = new ArrayList<>();
         Set<String> numeros = new HashSet<>();
         for(Row row :sheet){
@@ -235,6 +256,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             String dominio = getStringValorCelda(row.getCell(7));
             if(dominio==null){
+                logImportacion.addMensaje("Dominio no encontrado. Row NRO : " + row.getRowNum());
                 logger.error("Dominio no encontrado. Row NRO : " + row.getRowNum());
                 continue;
             }
@@ -242,6 +264,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Optional<Movil> movil = movilService.getByDominio(dominio);
 
             if(!movil.isPresent()){
+                logImportacion.addMensaje("No se encontro el movil para poder cruzar la informacion. Dominio: " + dominio);
                 logger.error("No se encontro el movil para poder cruzar la informacion. Dominio: " + dominio);
                 continue;
             }
@@ -249,11 +272,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             String numeroActa = getStringValorCelda(row.getCell(3));
 
             if(numeroActa == null){
+                logImportacion.addMensaje("No se encontro el numero de acta. Row numero : " + row.getRowNum());
                 logger.error("No se encontro el numero de acta. Row numero : " + row.getRowNum());
                 continue;
             }
 
             if(numeros.contains(numeroActa.trim())){
+                logImportacion.addMensaje("Numero de acta repetido. " + numeroActa);
                 continue;
             }else{
                 numeros.add(numeroActa.trim());
@@ -274,6 +299,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
 
             }catch (IllegalStateException e){
+                logImportacion.addMensaje("Fecha de acta invalida, Acta NRO :  " + numeroActa);
                 logger.error("Fecha de acta invalida, Acta NRO :  " + numeroActa);
             }
 
@@ -292,9 +318,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Ingresa la informacion de los moviles existentes.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFomatoMoviles(Sheet sheet) {
+    private void insertarFomatoMoviles(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO MOVILES");
         List<Movil> moviles = new ArrayList<>();
         for(Row row : sheet) {
             if (row.getRowNum() == 0) {
@@ -304,6 +333,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             String dominio = getStringValorCelda(row.getCell(1));
 
             if(dominio  == null){
+                logImportacion.addMensaje("Dominio no encontrado.");
                 logger.error("Dominio no encontrado.");
                 continue;
             }
@@ -323,6 +353,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 if(empleado.isPresent()){
                     movil.setEmpleado(empleado.get());
                 }else{
+                    logImportacion.addMensaje("Empleado no encontrado. DNI : " + dniEmpleado);
                     logger.error("Empleado no encontrado. DNI : " + dniEmpleado);
                 }
             }
@@ -335,11 +366,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Ingresa la grilla de un empleado.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFormatoGrilla(Sheet sheet) {
+    private void insertarFormatoGrilla(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO GRILLA");
         Cell primeraFecha = sheet.getRow(0).getCell(1);
         if(primeraFecha == null){
+            logImportacion.addMensaje("Primera fecha no encontrada.");
             logger.error("Primera fecha no encontrada.");
             return;
         }
@@ -353,12 +388,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             String dni = getStringValorCelda(row.getCell(0));
             if(dni == null || dni.isEmpty()){
                 logger.error("DNI no ENCONTRADO. row:"+ row.getRowNum());
+                logImportacion.addMensaje("DNI no ENCONTRADO. row:"+ row.getRowNum());
                 continue;
             }
             Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
 
             if(!empleadoOpt.isPresent()){
                 logger.error("Empleado no encontrado : " + dni);
+                logImportacion.addMensaje("Empleado no encontrado : " + dni);
                 continue;
             }
             Integer cantidadDias = 0;
@@ -377,6 +414,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     }
                     if(estadoString != null && estado == null){
                         logger.error("ESTADO NO RECONOCIDO : " + estadoString);
+                        logImportacion.addMensaje("ESTADO NO RECONOCIDO : " + estadoString);
                     }
                     cantidadDias++;
                 }
@@ -388,9 +426,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Ingresa las ofertas de empleo.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFomatoOfertasEmpleo(Sheet sheet) {
+    private void insertarFomatoOfertasEmpleo(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO Formato ofertas empleo.");
         List<Oferta> ofertas = new ArrayList<>();
         for(Row row : sheet){
             if (row.getRowNum() == 0) {
@@ -402,6 +443,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
             if(gerencia==null || stringCodigo == null){
                 logger.error("Empresa o codigo no encontrado fila nro: " + row.getRowNum());
+                logImportacion.addMensaje("Empresa o codigo no encontrado fila nro: " + row.getRowNum());
                 continue;
             }
 
@@ -420,21 +462,28 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     }
 
     @Transactional
-    private void insertarFomatoCredenciales(Sheet sheet) {
+    private void insertarFomatoCredenciales(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO Formato Credenciales.");
         for(Row row : sheet){
             if (row.getRowNum() == 0) {
                 continue;
             }
             Cell celdaDni = row.getCell(3);
+            if(celdaDni == null){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
+                continue;
+            }
             celdaDni.setCellType(CellType.STRING);
             String dni = celdaDni.getStringCellValue().trim();
             if(dni.isEmpty()){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
             }
             Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
 
             if(!empleadoOpt.isPresent()){
                 logger.error("Empleado no encontrado, DNI : " + dni);
+                logImportacion.addMensaje("Empleado no encontrado, DNI : " + dni);
                 continue;
             }
             Empleado empleado = empleadoOpt.get();
@@ -448,6 +497,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
             if(gerencia == null || jurisdiccion == null){
                 logger.error("Jurisdiccion o generencia invalida, DNI : " + dni);
+                logImportacion.addMensaje("Jurisdiccion o generencia invalida, DNI : " + dni);
                 continue;
             }
             Credencial credencial = credencialService.findByJurisdiccionAndGerencia(jurisdiccion , gerencia , empleado);
@@ -472,6 +522,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 }
 
             }catch (IllegalStateException e){
+                logImportacion.addMensaje("Fecha de vencimiento invalida, DNI: " + dni);
                 logger.error("Fecha de vencimiento invalida, DNI: " + dni);
             }
             if(empleado.getCredencial() == null) {
@@ -486,9 +537,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Realiza la insercion de dato sueldo total para los empleado que ya encuentran en la base de datos.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFormatoSueldo(Sheet sheet) {
+    private void insertarFormatoSueldo(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO SUELDO" );
         List<Empleado> lista = new ArrayList<>();
         for (Row row : sheet) {
             if (row.getRowNum() >= 0 && row.getRowNum() <= 3) {
@@ -496,8 +550,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             Double sueldoTotal = Double.valueOf(0);
             Cell celdaDni = row.getCell(3);
+
+            if(celdaDni == null){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
+                continue;
+            }
+
             String dni = celdaDni.getStringCellValue().substring(3, 11);
             if(dni.isEmpty()){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
             }
             Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
@@ -509,10 +570,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             try {
                                 sueldoTotal += cell.getNumericCellValue();
                             } catch (Exception e) {
+                                logImportacion.addMensaje("Dato incorrecto a sumar : fila y columna = " + row.getRowNum() + "  " + cell.getColumnIndex());
                                 logger.error("Dato invalido para sumar al sueldo total");
                             }
                         }
                     } catch (Exception e) {
+                        logImportacion.addMensaje("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex());
                         logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                     }
                 }
@@ -520,6 +583,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
                     lista.add(empleado);
                 }
+            }else{
+                logImportacion.addMensaje("Empleado no encontrado, dni: " + dni);
             }
         }
         empledoService.saveAll(lista);
@@ -528,9 +593,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     /**
      * Inserta toda la informacion basica del empleado.
+     *
      * @param sheet
+     * @param logImportacion
      */
-    private void insertarFormatoLegajo(Sheet sheet) {
+    private void insertarFormatoLegajo(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO Formato Legajo.");
         List<Empleado> listaEmpleados = new ArrayList<>();
         Set<String> dnis = new HashSet<>();
         for (Row row : sheet) {
@@ -539,12 +607,19 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             Cell celdaDni = row.getCell(41);
             celdaDni.setCellType(CellType.STRING);
+
+            if(celdaDni == null) {
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
+                continue;
+            }
             String dni = celdaDni.getStringCellValue().trim();
             if(dni.isEmpty()){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
             }
 
             if(dnis.contains(dni.trim())){
+                logImportacion.addMensaje("DNI Repetido, fila : " + row.getRowNum());
                 continue;
             }else{
                 dnis.add(dni.trim());
@@ -608,6 +683,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             try {
                                 s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
                             }catch (IllegalArgumentException e){
+                                logImportacion.addMensaje("Sindicato no reconocidog : " + row.getRowNum());
                                 logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
                             }
                             empleado.setSindicato(s);
@@ -627,7 +703,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         empledoService.saveAll(listaEmpleados);
     }
 
-    private void insertarFormatoBejerman(Sheet sheet) {
+    private void insertarFormatoBejerman(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO IMPORTACION BEJERMAN");
         List<Empleado> lista = new ArrayList<>();
         Set<String> dnis = new HashSet<>();
         for (Row row : sheet) {
@@ -636,15 +713,18 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             Cell celdaDni = row.getCell(25);
             if(celdaDni == null ){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
             }
             celdaDni.setCellType(CellType.STRING);
             String dni = celdaDni.getStringCellValue();
             if(dni.isEmpty()){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
             }
 
             if(dnis.contains(dni.trim())){
+                logImportacion.addMensaje("DNI REPETIDO, fila : " + row.getRowNum());
                 continue;
             }else{
                 dnis.add(dni.trim());
@@ -695,6 +775,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                             try {
                                 s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
                             }catch (IllegalArgumentException e){
+                                logImportacion.addMensaje("SINDICATO no reconocido : " + row.getRowNum());
                                 logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
                             }
                             empleado.setSindicato(s);
@@ -704,6 +785,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     }
                 } catch (Exception e) {
                     logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
+                    logImportacion.addMensaje("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex());
                 }
             }
             if(empleado!=null){

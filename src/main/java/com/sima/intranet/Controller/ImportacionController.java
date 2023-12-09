@@ -2,6 +2,7 @@ package com.sima.intranet.Controller;
 
 import com.sima.intranet.Exception.ParametroInvalidoException;
 import com.sima.intranet.Interface.ImportacionInterface;
+import com.sima.intranet.Repository.LogImportacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,7 @@ public class ImportacionController {
 
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            importador.procesarImportacion(String.valueOf(targetPath));
+            importador.procesarImportacion(String.valueOf(targetPath) , newFileName);
 
             return ResponseEntity.ok("Archivo cargado con éxito.");
         } catch (IOException e) {
