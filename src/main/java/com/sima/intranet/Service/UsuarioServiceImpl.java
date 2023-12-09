@@ -25,6 +25,7 @@ public class UsuarioServiceImpl implements UsuarioInterface {
     @Autowired
     JwtUtils jwtUtils;
 
+
     @Override
     public Usuario newUser(Usuario newUser) {
         return rusuario.save(newUser);
@@ -54,6 +55,10 @@ public class UsuarioServiceImpl implements UsuarioInterface {
         return true;
     }
 
+    public Optional<Usuario> getUsuarioActivo(HttpServletRequest request){
+        String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.getJwtFromCookies(request));
+        return rusuario.findByNombreUsuario(username);
+    }
 
 
 }

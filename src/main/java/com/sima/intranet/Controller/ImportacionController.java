@@ -1,8 +1,11 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Entity.Usuario;
 import com.sima.intranet.Exception.ParametroInvalidoException;
 import com.sima.intranet.Interface.ImportacionInterface;
 import com.sima.intranet.Repository.LogImportacionRepository;
+import com.sima.intranet.Service.UsuarioServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +26,11 @@ public class ImportacionController {
     @Autowired
     private ImportacionInterface importador;
 
+    @Autowired
+    private UsuarioServiceImpl usuarioService;
+
     @PostMapping("/archivo")
-    public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file , HttpServletRequest request) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("No se puedo recibir el archivo.");
         }
@@ -44,7 +50,9 @@ public class ImportacionController {
 
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            importador.procesarImportacion(String.valueOf(targetPath) , newFileName);
+            Usuario usuario = usuarioService.getUsuarioActivo(request).orElse(null);
+
+            importador.procesarImportacion(String.valueOf(targetPath) , newFileName , usuario);
 
             return ResponseEntity.ok("Archivo cargado con éxito.");
         } catch (IOException e) {

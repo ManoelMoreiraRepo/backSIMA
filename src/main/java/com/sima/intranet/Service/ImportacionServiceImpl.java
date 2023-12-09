@@ -109,10 +109,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
      *
      * @param ruta
      * @param nombreArchivo
+     * @param usuario
      */
     @Async
-    public void procesarImportacion(String ruta, String nombreArchivo) {
-        LogImportacion logImportacion = new LogImportacion(LocalDateTime.now() , nombreArchivo);
+    public void procesarImportacion(String ruta, String nombreArchivo, Usuario usuario) {
+        LogImportacion logImportacion = new LogImportacion(LocalDateTime.now() , nombreArchivo , usuario);
         try {
             FileInputStream excelFile = new FileInputStream(ruta);
             Workbook workbook = new XSSFWorkbook(excelFile);

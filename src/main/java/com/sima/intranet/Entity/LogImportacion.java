@@ -21,11 +21,14 @@ public class LogImportacion {
     private String archivo;
 
     private LocalDateTime inicio;
+    @ManyToOne
+    private Usuario usuario;
 
-    public LogImportacion(LocalDateTime inicio , String nombreArchivo){
+    public LogImportacion(LocalDateTime inicio , String nombreArchivo , Usuario usuario){
         this.inicio = inicio;
         this.archivo = nombreArchivo;
-        this.observaciones= "Inicio observaciones: \\n";
+        this.usuario = usuario;
+        this.observaciones= "Inicio observaciones: \n";
     }
 
     public LogImportacion() {
@@ -33,6 +36,6 @@ public class LogImportacion {
     }
 
     public void addMensaje(String msj){
-        this.observaciones += ("  " + msj + "\\n");
+        this.observaciones += ("  " + msj + "\n");
     }
 }
