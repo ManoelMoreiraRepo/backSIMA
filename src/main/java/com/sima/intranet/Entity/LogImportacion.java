@@ -1,5 +1,6 @@
 package com.sima.intranet.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +29,7 @@ public class LogImportacion {
         this.inicio = inicio;
         this.archivo = nombreArchivo;
         this.usuario = usuario;
-        this.observaciones= "Inicio observaciones: \n";
+        this.observaciones= "Inicio observaciones: <br/>";
     }
 
     public LogImportacion() {
@@ -36,6 +37,6 @@ public class LogImportacion {
     }
 
     public void addMensaje(String msj){
-        this.observaciones += ("  " + msj + "\n");
+        this.observaciones += ("  " + msj + "<br/>");
     }
 }

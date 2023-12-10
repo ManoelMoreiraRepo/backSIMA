@@ -1,6 +1,7 @@
 
 package com.sima.intranet.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.*;
@@ -22,6 +23,7 @@ public class Usuario {
     private String nombreUsuario;
     
     @Column
+    @JsonIgnore
     private String password;
     
     @Column
