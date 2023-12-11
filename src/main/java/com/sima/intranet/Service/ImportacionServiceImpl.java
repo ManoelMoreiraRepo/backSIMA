@@ -405,13 +405,19 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 if(cell.getColumnIndex()>2 && cell.getColumnIndex()<33){
                     String estadoString = getStringValorCelda(cell);
                     EstadoDia estado =  EstadoDia.getEstadoDiaImportacion(estadoString);
+                    LocalDate fechaAplica = fechaInicio.plusDays(cantidadDias);
                     if(estado!=null){
-                        LocalDate fechaAplica = fechaInicio.plusDays(cantidadDias);
+
                         Dia dia = diaService.buscarPorFechaYEmpleado(fechaAplica , empleadoOpt.get()).orElse(new Dia());
                         dia.setEmpleado(empleadoOpt.get());
                         dia.setFecha(fechaAplica);
                         dia.setEstado(estado);
                         diasIngresados.add(dia);
+                    }else{
+                        Optional<Dia> registroViejo = diaService.buscarPorFechaYEmpleado(fechaAplica , empleadoOpt.get());
+                        if(registroViejo.isPresent()){
+                            diaService.delete(registroViejo.get());
+                        }
                     }
                     if(estadoString != null && estado == null){
                         logger.error("ESTADO NO RECONOCIDO : " + estadoString);

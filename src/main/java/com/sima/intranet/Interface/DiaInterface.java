@@ -14,4 +14,6 @@ public interface DiaInterface {
     void saveAll(List<Dia> dias);
 
     List<Dia> buscarGrillaEmpleadoEntreFechas(LocalDate fechaInicio, LocalDate fechaFinal, Long id);
+
+    void delete(Dia dia);
 }

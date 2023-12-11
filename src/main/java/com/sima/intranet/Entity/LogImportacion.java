@@ -16,7 +16,7 @@ public class LogImportacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String observaciones;
 
     private String archivo;

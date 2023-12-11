@@ -39,4 +39,9 @@ public class DiaServiceImpl implements DiaInterface {
         Empleado empleado = empleadoService.findEmpleado(id);
         return diaRepository.findByFechaBetweenAndAndEmpleado(fechaInicio,fechaFinal,empleado);
     }
+
+    @Override
+    public void delete(Dia dia) {
+        diaRepository.delete(dia);
+    }
 }
