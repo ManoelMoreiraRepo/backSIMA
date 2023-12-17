@@ -20,6 +20,11 @@ public enum TipoCredencial {
     }
 
     public static TipoCredencial getTipoCredencialImportacion(String esCredencialFisica){
+
+        if(esCredencialFisica == null){
+            return null;
+        }
+
         if(esCredencialFisica.trim().equals("SI")){
             return TipoCredencial.CREDENCIAL_FISICA;
         }else if(esCredencialFisica.trim().equals("NO")){

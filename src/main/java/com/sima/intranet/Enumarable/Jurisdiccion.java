@@ -11,6 +11,9 @@ public enum Jurisdiccion {
     }
 
     public static Jurisdiccion getJurisdiccion(String dato){
+        if(dato == null || dato.isEmpty()){
+            return null;
+        }
         for(Jurisdiccion j : Jurisdiccion.values()){
             if(j.descrip.equalsIgnoreCase(dato)){
                 return j;

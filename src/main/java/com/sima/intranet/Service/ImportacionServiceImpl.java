@@ -346,7 +346,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             movil.setEstado(EstadoMovil.getEstadoMovilImportacion(getStringValorCelda(row.getCell(2))));
             movil.setAsignado(getStringValorCelda(row.getCell(3)));
             movil.setDestino(getStringValorCelda(row.getCell(4)));
-            movil.setGerencia(Gerencia.getGerencia(getStringValorCelda(row.getCell(5))));
+            movil.setGerencia(Gerencia.getGerencia(row.getCell(5)));
 
             String dniEmpleado = getStringValorCelda(row.getCell(6));
             if(dniEmpleado != null){
@@ -407,7 +407,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     EstadoDia estado =  EstadoDia.getEstadoDiaImportacion(estadoString);
                     LocalDate fechaAplica = fechaInicio.plusDays(cantidadDias);
                     if(estado!=null){
-
                         Dia dia = diaService.buscarPorFechaYEmpleado(fechaAplica , empleadoOpt.get()).orElse(new Dia());
                         dia.setEmpleado(empleadoOpt.get());
                         dia.setFecha(fechaAplica);
@@ -495,12 +494,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }
             Empleado empleado = empleadoOpt.get();
             Cell celGerencia = row.getCell(8);
-            celGerencia.setCellType(CellType.STRING);
-            Gerencia gerencia = Gerencia.getGerencia(celGerencia.getStringCellValue());
+            Gerencia gerencia = Gerencia.getGerencia(celGerencia);
 
             Cell celJurisdiccion = row.getCell(7);
-            celJurisdiccion.setCellType(CellType.STRING);
-            Jurisdiccion jurisdiccion = Jurisdiccion.getJurisdiccion(celJurisdiccion.getStringCellValue());
+            Jurisdiccion jurisdiccion = Jurisdiccion.getJurisdiccion(getStringValorCelda(celJurisdiccion));
 
             if(gerencia == null || jurisdiccion == null){
                 logger.error("Jurisdiccion o generencia invalida, DNI : " + dni);
@@ -516,11 +513,10 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 credencial.setGerencia(gerencia);
             }
             Cell cellTipo = row.getCell(4);
-            cellTipo.setCellType(CellType.STRING);
-            credencial.setTipo(TipoCredencial.getTipoCredencialImportacion(cellTipo.getStringCellValue()));
+            credencial.setTipo(TipoCredencial.getTipoCredencialImportacion(getStringValorCelda(cellTipo)));
             Cell cellVencimiento = row.getCell(6);
             try {
-                if(cellVencimiento.getDateCellValue()!=null){
+                if(cellVencimiento != null && cellVencimiento.getDateCellValue()!=null){
                     if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
                         credencial.setFechaVencimentoCredencial(getLocalDateFromExcel(cellVencimiento.getDateCellValue()));
                     }else{
@@ -572,19 +568,22 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if(empleadoOpt.isPresent()){
                 Empleado empleado = empleadoOpt.get();
                 for (Cell cell : row) {
-                    try {
-                        if (cell.getColumnIndex() > 10) {
-                            try {
-                                sueldoTotal += cell.getNumericCellValue();
-                            } catch (Exception e) {
-                                logImportacion.addMensaje("Dato incorrecto a sumar : fila y columna = " + row.getRowNum() + "  " + cell.getColumnIndex());
-                                logger.error("Dato invalido para sumar al sueldo total");
+                    if(cell != null){
+                        try {
+                            if (cell.getColumnIndex() > 10) {
+                                try {
+                                    sueldoTotal += cell.getNumericCellValue();
+                                } catch (Exception e) {
+                                    logImportacion.addMensaje("Dato incorrecto a sumar : fila y columna = " + row.getRowNum() + "  " + cell.getColumnIndex());
+                                    logger.error("Dato invalido para sumar al sueldo total");
+                                }
                             }
+                        } catch (Exception e) {
+                            logImportacion.addMensaje("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex());
+                            logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                         }
-                    } catch (Exception e) {
-                        logImportacion.addMensaje("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex());
-                        logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                     }
+
                 }
                 if(empleado!=null){
                     empleado.setSueldoTotal(new BigDecimal(sueldoTotal));
@@ -634,74 +633,76 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Empleado empleado = empledoService.findByDNI(dni).orElse(new Empleado(dni));
             Gerencia gerencia = null;
             for (Cell cell : row) {
+                if(cell != null){
+                    try {
+                        switch (cell.getColumnIndex()) {
+                            case 0:
+                                empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
+                                break;
+                            case 1:
+                                empleado.setApellidoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 2:
+                                empleado.setNombreEmpleado(cell.getStringCellValue());
+                                break;
+                            case 3:
+                                cell.setCellType(CellType.STRING);
+                                empleado.setDireccionEmpleado(cell.getStringCellValue());
+                                break;
+                            case 4:
+                                cell.setCellType(CellType.STRING);
+                                empleado.setDireccionEmpleado(empleado.getDireccionEmpleado() + " " + cell.getStringCellValue());
+                                break;
+                            case 13:
+                                empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
+                                break;
+                            case 15:
+                                cell.setCellType(CellType.STRING);
+                                empleado.setTelefonoEmpleado(String.valueOf(cell.getStringCellValue()));
+                                break;
+                            case 16:
+                                empleado.setEmailEmpleado(cell.getStringCellValue());
+                                break;
+                            case 17:
+                                empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
+                                break;
+                            case 24:
+                                empleado.setFechaAltaEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
+                                break;
+                            case 27:
+                                empleado.setCargoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 30:
+                                empleado.setObjetivoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 34:
+                                empleado.setEstadoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 42:
+                                gerencia = Gerencia.getGerencia(cell);
+                                if(gerencia!=null){
+                                    empleado.setGerencia(gerencia);
+                                }
+                                break;
+                            case 45:
+                                Sindicato s = null;
+                                try {
+                                    s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
+                                }catch (IllegalArgumentException e){
+                                    logImportacion.addMensaje("Sindicato no reconocidog : " + row.getRowNum());
+                                    logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
+                                }
+                                empleado.setSindicato(s);
+                                break;
 
-                try {
-                    switch (cell.getColumnIndex()) {
-                        case 0:
-                            empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
-                            break;
-                        case 1:
-                            empleado.setApellidoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 2:
-                            empleado.setNombreEmpleado(cell.getStringCellValue());
-                            break;
-                        case 3:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setDireccionEmpleado(cell.getStringCellValue());
-                            break;
-                        case 4:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setDireccionEmpleado(empleado.getDireccionEmpleado() + " " + cell.getStringCellValue());
-                            break;
-                        case 13:
-                            empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
-                            break;
-                        case 15:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setTelefonoEmpleado(String.valueOf(cell.getStringCellValue()));
-                            break;
-                        case 16:
-                            empleado.setEmailEmpleado(cell.getStringCellValue());
-                            break;
-                        case 17:
-                            empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
-                            break;
-                        case 24:
-                            empleado.setFechaAltaEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
-                            break;
-                        case 27:
-                            empleado.setCargoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 30:
-                            empleado.setObjetivoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 34:
-                            empleado.setEstadoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 42:
-                            gerencia = Gerencia.getGerencia(cell.getStringCellValue());
-                            if(gerencia!=null){
-                                empleado.setGerencia(gerencia);
-                            }
-                            break;
-                        case 45:
-                            Sindicato s = null;
-                            try {
-                                s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
-                            }catch (IllegalArgumentException e){
-                                logImportacion.addMensaje("Sindicato no reconocidog : " + row.getRowNum());
-                                logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
-                            }
-                            empleado.setSindicato(s);
-                            break;
-
-                        default:
-                            //No me sirve el dato.
+                            default:
+                                //No me sirve el dato.
+                        }
+                    } catch (Exception e) {
+                        logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                     }
-                } catch (Exception e) {
-                    logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                 }
+
             }
             if(empleado!=null){
                 listaEmpleados.add(empleado);
@@ -740,56 +741,59 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             Gerencia gerencia = null;
             for (Cell cell : row) {
                 try {
-                    switch (cell.getColumnIndex()) {
-                        case 0:
-                            gerencia = Gerencia.getGerencia(cell.getStringCellValue());
-                            if(gerencia!=null){
-                                empleado.setGerencia(gerencia);
-                            }
-                            break;
-                        case 1:
-                            empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
-                            break;
-                        case 2:
-                            empleado.setNombreEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 1));
-                            empleado.setApellidoEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 0));
-                            break;
-                        case 3:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setTelefonoEmpleado(getStringSinEspacios(cell.getStringCellValue()));
-                            break;
-                        case 4:
-                            empleado.setDireccionEmpleado(cell.getStringCellValue());
-                            break;
-                        case 11:
-                            empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
-                            break;
-                        case 22:
-                            empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
-                            break;
-                        case 25:
-                            cell.setCellType(CellType.STRING);
-                            empleado.setDNIEmpleado(cell.getStringCellValue());
-                            break;
-                        case 29:
-                            empleado.setObjetivoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 31:
-                            empleado.setCargoEmpleado(cell.getStringCellValue());
-                            break;
-                        case 64:
-                            Sindicato s = null;
-                            try {
-                                s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
-                            }catch (IllegalArgumentException e){
-                                logImportacion.addMensaje("SINDICATO no reconocido : " + row.getRowNum());
-                                logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
-                            }
-                            empleado.setSindicato(s);
-                            break;
-                        default:
-                            //No me sirve el dato.
+                    if(cell != null){
+                        switch (cell.getColumnIndex()) {
+                            case 0:
+                                gerencia = Gerencia.getGerencia(cell);
+                                if(gerencia!=null){
+                                    empleado.setGerencia(gerencia);
+                                }
+                                break;
+                            case 1:
+                                empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
+                                break;
+                            case 2:
+                                empleado.setNombreEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 1));
+                                empleado.setApellidoEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 0));
+                                break;
+                            case 3:
+                                cell.setCellType(CellType.STRING);
+                                empleado.setTelefonoEmpleado(getStringSinEspacios(cell.getStringCellValue()));
+                                break;
+                            case 4:
+                                empleado.setDireccionEmpleado(cell.getStringCellValue());
+                                break;
+                            case 11:
+                                empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
+                                break;
+                            case 22:
+                                empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
+                                break;
+                            case 25:
+                                cell.setCellType(CellType.STRING);
+                                empleado.setDNIEmpleado(cell.getStringCellValue());
+                                break;
+                            case 29:
+                                empleado.setObjetivoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 31:
+                                empleado.setCargoEmpleado(cell.getStringCellValue());
+                                break;
+                            case 64:
+                                Sindicato s = null;
+                                try {
+                                    s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());
+                                }catch (IllegalArgumentException e){
+                                    logImportacion.addMensaje("SINDICATO no reconocido : " + row.getRowNum());
+                                    logger.error("Sindicato no reconocido : " + cell.getStringCellValue());
+                                }
+                                empleado.setSindicato(s);
+                                break;
+                            default:
+                                //No me sirve el dato.
+                        }
                     }
+
                 } catch (Exception e) {
                     logger.error("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex() );
                     logImportacion.addMensaje("Error parseando empleado en fila  " + row.getRowNum() +  " y columna " +cell.getColumnIndex());

@@ -45,6 +45,9 @@ public enum Sindicato {
         this.descrip = descip;
     }
     public static Sindicato getSindicatoImportacion(String sindicato){
+        if(sindicato == null || sindicato.isEmpty()){
+            return  null;
+        }
         for(Sindicato s : Sindicato.values()){
             if(s.descrip.equalsIgnoreCase(sindicato.trim())){
                 return s;
@@ -54,6 +57,9 @@ public enum Sindicato {
     }
 
     public static Sindicato getSindicato(String sindicato){
+        if(sindicato == null || sindicato.isEmpty()){
+            return  null;
+        }
         for(Sindicato s : Sindicato.values()){
             if(s.name().equalsIgnoreCase(sindicato)){
                 return s;

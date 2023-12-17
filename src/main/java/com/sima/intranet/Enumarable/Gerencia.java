@@ -1,5 +1,8 @@
 package com.sima.intranet.Enumarable;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+
 public enum Gerencia {
 
     GER01( "G01" , "GRUPO SIMA" , "GROUP"  ),
@@ -20,10 +23,12 @@ public enum Gerencia {
         this.codigoOfertasEmpleo = codigoOfertasEmpleo;
     }
 
-    public static Gerencia getGerencia(String dato){
-        if(dato==null){
+    public static Gerencia getGerencia(Cell cell){
+        if(cell==null){
             return null;
         }
+        cell.setCellType(CellType.STRING);
+        String dato = cell.getStringCellValue();
         for(Gerencia g : Gerencia.values()){
             if(g.codigo.equalsIgnoreCase(dato.replace(" " , ""))){
                 return g;
