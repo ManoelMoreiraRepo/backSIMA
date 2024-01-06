@@ -9,17 +9,26 @@ import com.sima.intranet.Filtro.FiltroEmpleado;
 import com.sima.intranet.Interface.DiaInterface;
 import com.sima.intranet.Interface.EmpleadoInterface;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import com.sima.intranet.Util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/Empleado")
@@ -39,8 +49,10 @@ public class EmpleadoController {
 
     @Autowired
     DiaInterface diaService;
+    @Value("${rutaPefiles}")
+    private String rutaPerfiles;
 
-     @GetMapping("/detail/{id}")
+    @GetMapping("/detail/{id}")
     public Empleado getEmpleado(@PathVariable long id) {
         return iEmpleadoService.findEmpleado(id);
     } 
@@ -135,5 +147,35 @@ public class EmpleadoController {
     public Mensaje borrarEmpleado(@PathVariable Long id){
          iEmpleadoService.deleteEmpleado(id);
          return new Mensaje("Empleado borrado correctamente.");
+    }
+
+
+    @GetMapping("/imagen/{imageName:.+}")
+    public ResponseEntity<Resource> getImage(@PathVariable String imageName) throws IOException {
+        Path imagePath = Paths.get(rutaPerfiles).resolve(imageName);
+        Resource resource = new UrlResource(imagePath.toUri());
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg") // Ajusta el tipo de contenido según el tipo de imagen
+                .body(resource);
+    }
+
+    @PostMapping("/imagen/{imageName:.+}")
+    public ResponseEntity<String> updateImage(@PathVariable String imageName, @RequestParam("file") MultipartFile file) {
+        Path imagePath = Paths.get(rutaPerfiles).resolve(imageName);
+        if (Files.exists(imagePath)) {
+            try {
+                Files.delete(imagePath);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la imagen existente");
+            }
+        }
+
+        try {
+            Files.copy(file.getInputStream(), imagePath);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar la nueva imagen");
+        }
+
+        return ResponseEntity.ok("Imagen reemplazada exitosamente");
     }
 }
