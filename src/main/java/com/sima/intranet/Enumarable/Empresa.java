@@ -28,4 +28,18 @@ public enum Empresa {
         }
         return  Optional.empty();
     }
+
+    public static Optional<Empresa> getByName(String name){
+        if(name == null || name.isEmpty()){
+            return Optional.of(SIN_EMPRESA);
+        }
+
+        for(Empresa e : Empresa.values()){
+            if(e.name().equals(name)){
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
 }

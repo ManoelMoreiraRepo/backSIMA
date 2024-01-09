@@ -2,13 +2,11 @@ package com.sima.intranet.Dao;
 
 import com.sima.intranet.Diccionario.Empleado_;
 import com.sima.intranet.Entity.Empleado;
-import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Enumarable.Empresa;
 import com.sima.intranet.Filtro.FiltroEmpleado;
-import com.sima.intranet.Util.Strings;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,13 +17,19 @@ public class EmpleadoDAO {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Long getCantidadPorEmpresa(List<Gerencia> gerencias){
+    public Long getCantidadPorEmpresa(Empresa empresa){
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<Empleado> root = query.from(Empleado.class);
         List<Predicate> cond = new ArrayList<>();
-
-        cond.add(root.get(Empleado_.GERENCIA).in(gerencias));
+        if(!empresa.equals(Empresa.SIN_EMPRESA)){
+            cond.add(builder.equal(root.get(Empleado_.EMPRESA) , empresa));
+        }else {
+            cond.add(builder.or(
+                        builder.equal(root.get(Empleado_.EMPRESA) , empresa),
+                        builder.isNull(root.get(Empleado_.EMPRESA))
+            ));
+        }
 
         query.where(cond.toArray(new Predicate[0]));
         Selection<Long> count = builder.count(root.get(Empleado_.ID));

@@ -124,7 +124,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
                 // Agregar un registro con cantidad 0 para gerencias que no están en la consulta
                 String descripcion = String.format("%s   NOMINA ACTIVA", g.codigo);
                 String titulo = g.descrip;
-                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion , "url" , "/empleado?gerencia="+g.name()));
+                lista.add(Map.of("cant", 0, "titulo", titulo, "descrip", descripcion , "url" , "/rrhh/empleado" , "ger" , g.name()));
             }
         }
 
@@ -138,7 +138,7 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
             if (gerencia != null) {
                 String descripcion = String.format("%s   NOMINA ACTIVA", gerencia.codigo);
                 String titulo = gerencia.descrip;
-                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion ,"url" , "/empleado?gerencia="+gerencia.name()));
+                lista.add(Map.of("cant", dato[0], "titulo", titulo, "descrip", descripcion ,"url" , "/rrhh/empleado" , "ger" , gerencia.name()));
             }
         }
 
@@ -188,16 +188,16 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         List<Map<String,Object>> lista = new ArrayList<>();
 
         for(Empresa empresa : Empresa.values()){
-            if(empresa.equals(Empresa.SIN_EMPRESA)){
+            /*if(empresa.equals(Empresa.SIN_EMPRESA)){
                 continue;
-            }
-            Long result = empleadoDAO.getCantidadPorEmpresa(empresa.gerencias);
-            List<String> descrip = empresa.gerencias.stream().map(Gerencia::getCodigo).collect(Collectors.toList());
+            }*/
+            Long result = empleadoDAO.getCantidadPorEmpresa(empresa);
+           /* List<String> descrip = empresa.gerencias.stream().map(Gerencia::getCodigo).collect(Collectors.toList());
             String descripcion = String.join(" / " , descrip);
             if(descripcion.equals("")){
                 descripcion= "SIN GERENCIAS";
-            }
-            lista.add(Map.of("cant", result , "titulo", empresa.descripcion , "descrip", descripcion));
+            }*/
+            lista.add(Map.of("cant", result , "titulo", empresa.descripcion , "descrip", ""));
         }
 
         return lista;

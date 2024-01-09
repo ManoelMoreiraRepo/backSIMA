@@ -155,7 +155,7 @@ public class EmpleadoController {
         Path imagePath = Paths.get(rutaPerfiles).resolve(imageName);
         Resource resource = new UrlResource(imagePath.toUri());
         return ResponseEntity.ok()
-                .header("Content-Type", "image/jpeg") // Ajusta el tipo de contenido según el tipo de imagen
+                .header("Content-Type", "image/jpeg")
                 .body(resource);
     }
 

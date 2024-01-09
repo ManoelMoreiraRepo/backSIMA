@@ -2,6 +2,7 @@ package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.*;
 import com.sima.intranet.Enumarable.*;
+import com.sima.intranet.Enumarable.Empresa;
 import com.sima.intranet.Interface.*;
 import com.sima.intranet.Repository.LogImportacionRepository;
 import jakarta.transaction.Transactional;
@@ -51,7 +52,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     private LogImportacionRepository logImportacionRepository;
 
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
-            "gerencia","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
+            "gerencia","empresa","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
             "per_codarea", "per_ttel", "per_tmail", "per_locms", "per_sexo", "per_fNac", "per_estc", "per_tDoc", "per_ndoc",
             "per_nac", "per_cuil", "lab_cat", "lab_sec", "lab_pto", "lab_car", "lab_cla", "lab_basico", "lab_Ese",
@@ -75,7 +76,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Ingreso anterior 1", "Sueldo básico", "Categoría", "Sucursal", "Sección", "Objetivo",
             "Zona de pago", "C.U.I.L.", "Modalidad de contratación", "Situación", "Condición",
             "Actividad", "Zona geográfica", "CCT", "Seguro de vida", "Obra social", "DNI",
-            "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO"
+            "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO" , "EMPRESA"
     );
 
     public static final List<String> FORMATO_CREDENCIALES = List.of(
@@ -695,6 +696,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                                 empleado.setSindicato(s);
                                 break;
 
+                            case 46:
+                                Optional<Empresa> empresa = Empresa.getByName(getStringValorCelda(cell));
+                                if(empresa.isPresent()){
+                                    empleado.setEmpresa(empresa.get());
+                                }
+                                break;
+
                             default:
                                 //No me sirve el dato.
                         }
@@ -719,7 +727,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             if (row.getRowNum() == 0) {
                 continue;
             }
-            Cell celdaDni = row.getCell(25);
+            Cell celdaDni = row.getCell(26);
             if(celdaDni == null ){
                 logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
                 continue;
@@ -750,36 +758,42 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                                 }
                                 break;
                             case 1:
-                                empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
+                                Optional<Empresa> empresa = Empresa.getByName(getStringValorCelda(cell));
+                                if(empresa.isPresent()){
+                                    empleado.setEmpresa(empresa.get());
+                                }
                                 break;
                             case 2:
+                                empleado.setLegajoEmpleado(String.valueOf(Double.valueOf(cell.getNumericCellValue()).longValue()));
+                                break;
+                            case 3:
                                 empleado.setNombreEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 1));
                                 empleado.setApellidoEmpleado(getNomnbreApellidoSplit(cell.getStringCellValue(), 0));
                                 break;
-                            case 3:
+                            case 4:
                                 cell.setCellType(CellType.STRING);
                                 empleado.setTelefonoEmpleado(getStringSinEspacios(cell.getStringCellValue()));
                                 break;
-                            case 4:
+                            case 5:
                                 empleado.setDireccionEmpleado(cell.getStringCellValue());
                                 break;
-                            case 11:
+                            case 12:
                                 empleado.setCodigoPostalEmpleado(String.valueOf(cell.getNumericCellValue()));
                                 break;
-                            case 22:
+                            case 23:
                                 empleado.setFechaNascimentoEmpleado(getLocalDateFromExcel(cell.getDateCellValue()));
                                 break;
-                            case 25:
+                            case 26:
                                 cell.setCellType(CellType.STRING);
                                 empleado.setDNIEmpleado(cell.getStringCellValue());
                                 break;
-                            case 29:
+                            case 30:
                                 empleado.setObjetivoEmpleado(cell.getStringCellValue());
                                 break;
-                            case 31:
+                            case 32:
                                 empleado.setCargoEmpleado(cell.getStringCellValue());
                                 break;
-                            case 64:
+                            case 67:
                                 Sindicato s = null;
                                 try {
                                     s = Sindicato.getSindicatoImportacion(cell.getStringCellValue());

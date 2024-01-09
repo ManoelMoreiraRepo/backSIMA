@@ -12,4 +12,5 @@ public class Empleado_ {
 
     public static final String OBJETIVO = "objetivoEmpleado";
 
+    public static final String EMPRESA = "empresa" ;
 }
