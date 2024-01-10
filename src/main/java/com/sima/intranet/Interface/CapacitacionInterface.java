@@ -1,7 +1,11 @@
 package com.sima.intranet.Interface;
 
 import com.sima.intranet.Entity.Capacitacion;
+import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.CursoHabilitante;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface CapacitacionInterface {
 
@@ -16,4 +20,8 @@ public interface CapacitacionInterface {
     Boolean deleteCapacitacion(Long idCapacitacion);
 
     List<Capacitacion> listByIdEmpleado(Long idEmpleado);
+
+    Optional<Capacitacion> findByEmpleadoAndTipoCursoHabilitante(Empleado empleado , CursoHabilitante tipoCurso);
+
+    void saveAll(List<Capacitacion> capacitacions);
 }

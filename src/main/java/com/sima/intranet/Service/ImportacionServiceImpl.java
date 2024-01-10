@@ -51,6 +51,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     @Autowired
     private LogImportacionRepository logImportacionRepository;
 
+    @Autowired
+    private CapacitacionInterface capacitacionService;
+
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","empresa","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
             "per_escalera", "per_telef", "per_CP", "per_prov", "per_entrecalles", "per_mail", "per_loc", "per_nest",
@@ -103,6 +106,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "Apellido y Nombre", "LEGAJO", "DNI", "Ndoc", "NOMINA ACTIVA",
             "PRODUCTO", "MODELO", "TALLE", "CANT.", "FECHA"
     );
+
+    public static final List<String> FORMATO_BASE_GPS = List.of("Leg", "Apellido y Nombre", "DNI", "Estado", "Vto Cred", "Foto", "AA2000", "F PSA",
+            "Est. Cred", "Serv.", "Turno", "Cargo", "Vto AV", "Vto RX", "P004", "P005",
+            "P011", "BRIG", "AMAM", "Mail", "Tel Particular", "hoy", "5", "15",
+            "Direccion", "CP", "Fecha de nac.");
 
 
     /**
@@ -158,11 +166,14 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_INDUMENTARIA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INFRACCIONES.");
                 insertarFormatoIndumentaria(sheet , logImportacion);
+            }else if(FORMATO_BASE_GPS.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO INFRACCIONES.");
+                insertarFormatoBaseGPS(sheet , logImportacion);
             }else{
                 //cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 //logger.info("El formato de este excel no esta implementado.");
-                //System.out.println("Cabezeras no reconocidas");
-                //System.out.println(cabezera);
+                System.out.println("Cabezeras no reconocidas");
+                System.out.println(cabezera);
 
             }
             workbook.close();
@@ -175,6 +186,70 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             logImportacionRepository.save(logImportacion);
         }
 
+    }
+
+    private void insertarFormatoBaseGPS(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO BASE GPS.");
+        List<Capacitacion> capacitacions = new ArrayList<>();
+        for(Row row :sheet){
+            if(row.getRowNum() == 0){
+                continue;
+            }
+
+            String dni = getStringValorCelda(row.getCell(2));
+
+            if(dni == null){
+                logImportacion.addMensaje("Dni no encontrado. row nro : " + row.getRowNum());
+                logger.error("Dni no encontrado. row nro : " + row.getRowNum());
+                continue;
+            }
+
+            Optional<Empleado> empleado = empledoService.findByDNI(dni.trim());
+
+            if(!empleado.isPresent()){
+                logImportacion.addMensaje("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni );
+                logger.error("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni);
+                continue;
+            }
+            for(CursoHabilitante curso :CursoHabilitante.values()){
+                LocalDate fecha = getLocalDateFromExcel(row.getCell(curso.columna) , logImportacion , row.getRowNum());
+                if(fecha!=null){
+                    Empleado empl = empleado.get();
+                    Optional<Capacitacion> capacitacionOpt = capacitacionService.findByEmpleadoAndTipoCursoHabilitante(empl, curso);
+                    Capacitacion cap = null;
+                    if(capacitacionOpt.isPresent()){
+                        cap = capacitacionOpt.get();
+                        cap.setFechaVencimentoCapacitacion(fecha);
+                    }else{
+                        cap = new Capacitacion();
+                        cap.setEmpleado(empl);
+                        cap.setTipoCurso(curso);
+                    }
+                    capacitacions.add(cap);
+                }
+            }
+
+
+        }
+        capacitacionService.saveAll(capacitacions);
+    }
+
+    private LocalDate getLocalDateFromExcel(Cell cell, LogImportacion logImportacion, int rowNum) {
+        LocalDate fecha = null;
+        try {
+            if(cell != null && cell.getDateCellValue()!=null){
+                if(!cell.getCellType().equals(CellType.NUMERIC)){
+                    fecha = getLocalDateFromExcel(cell.getDateCellValue());
+                }else{
+                    fecha = getLocalDateFromExcelNumeric(cell.getNumericCellValue());
+                }
+            }
+
+        }catch (IllegalStateException e){
+            logImportacion.addMensaje("Fecha invalida, Row nro :  " + rowNum);
+            logger.error("Fecha invalida, Row nro :  " + rowNum);
+        }
+        return fecha;
     }
 
     private void insertarFormatoIndumentaria(Sheet sheet, LogImportacion logImportacion) {

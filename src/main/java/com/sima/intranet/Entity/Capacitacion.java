@@ -1,14 +1,8 @@
 package com.sima.intranet.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.sima.intranet.Enumarable.CursoHabilitante;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -23,21 +17,23 @@ public class Capacitacion {
     private Long idCapacitacion;
     
     @Column
-    private String CodigoCapacitacion;
+    private String codigoCapacitacion;
     
     @Column
     private String nombreCapacitacion;
     
     @Column
-    private  boolean EstadoCapacitacion;
+    private boolean estadoCapacitacion;
     
     @Column
-    private LocalDate FechaOtorgamentoCapacitacion;
+    private LocalDate fechaOtorgamentoCapacitacion;
     
     @Column
-    private LocalDate FechaVencimentoCapacitacion;
-    
-    
+    private LocalDate fechaVencimentoCapacitacion;
+
+    @Enumerated(EnumType.STRING)
+    private CursoHabilitante tipoCurso;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="idEmpleado")
     @JsonIgnoreProperties({"empleado","capacitacion","indumentaria","hibernateLazyInitializer","handler"})

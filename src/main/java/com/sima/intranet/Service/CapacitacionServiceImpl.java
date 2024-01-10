@@ -1,6 +1,8 @@
 package com.sima.intranet.Service;
 
 import com.sima.intranet.Entity.Capacitacion;
+import com.sima.intranet.Entity.Empleado;
+import com.sima.intranet.Enumarable.CursoHabilitante;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Jurisdiccion;
 import com.sima.intranet.Enumarable.TipoCredencial;
@@ -60,5 +62,14 @@ public class CapacitacionServiceImpl implements CapacitacionInterface{
         return this.rCapacitacion.listByIdCapacitacion(idEmpleado);
     }
 
-    
+    public Optional<Capacitacion> findByEmpleadoAndTipoCursoHabilitante(Empleado empleado , CursoHabilitante tipoCurso){
+        return this.rCapacitacion.findByEmpleadoAndTipoCurso(empleado,tipoCurso);
+    }
+
+    @Override
+    public void saveAll(List<Capacitacion> capacitacions) {
+        this.rCapacitacion.saveAll(capacitacions);
+    }
+
+
 }
