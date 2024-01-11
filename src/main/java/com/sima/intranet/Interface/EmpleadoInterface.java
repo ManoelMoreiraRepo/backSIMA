@@ -1,5 +1,6 @@
 package com.sima.intranet.Interface;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Filtro.FiltroEmpleado;
@@ -38,4 +39,5 @@ public interface EmpleadoInterface {
     List<Map<String,Object>> getCountByEmpresa();
 
     List<Empleado> findEmpleado(FiltroEmpleado filtro);
+
 }
