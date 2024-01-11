@@ -24,4 +24,6 @@ public interface CapacitacionInterface {
     Optional<Capacitacion> findByEmpleadoAndTipoCursoHabilitante(Empleado empleado , CursoHabilitante tipoCurso);
 
     void saveAll(List<Capacitacion> capacitacions);
+
+    List<Capacitacion> findByEmpleadoID(Long idEmpleado);
 }

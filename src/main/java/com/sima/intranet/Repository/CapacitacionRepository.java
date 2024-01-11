@@ -18,5 +18,7 @@ public interface CapacitacionRepository extends JpaRepository<Capacitacion,Long>
 
 
     Optional<Capacitacion> findByEmpleadoAndTipoCurso(Empleado empleado , CursoHabilitante tipoCurso);
+
+    List<Capacitacion> findByEmpleadoIdEmpleado(Long id);
 } 
 

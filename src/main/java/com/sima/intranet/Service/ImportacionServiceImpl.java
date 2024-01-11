@@ -224,6 +224,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         cap = new Capacitacion();
                         cap.setEmpleado(empl);
                         cap.setTipoCurso(curso);
+                        cap.setFechaVencimentoCapacitacion(fecha);
                     }
                     capacitacions.add(cap);
                 }

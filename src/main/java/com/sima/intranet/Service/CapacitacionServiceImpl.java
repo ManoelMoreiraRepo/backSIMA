@@ -71,5 +71,10 @@ public class CapacitacionServiceImpl implements CapacitacionInterface{
         this.rCapacitacion.saveAll(capacitacions);
     }
 
+    @Override
+    public List<Capacitacion> findByEmpleadoID(Long idEmpleado) {
+        return this.rCapacitacion.findByEmpleadoIdEmpleado(idEmpleado);
+    }
+
 
 }

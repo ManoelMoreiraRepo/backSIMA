@@ -1,16 +1,22 @@
 package com.sima.intranet.Service;
 
+import com.sima.intranet.Dto.CredencialasDTO;
+import com.sima.intranet.Entity.Capacitacion;
 import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Jurisdiccion;
 import com.sima.intranet.Enumarable.TipoCredencial;
+import com.sima.intranet.Interface.CapacitacionInterface;
 import com.sima.intranet.Interface.CredencialInterface;
+import com.sima.intranet.Interface.EmpleadoInterface;
 import com.sima.intranet.Repository.CredencialRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import com.sima.intranet.Util.UtilesFecha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +25,9 @@ public class CredencialServiceImpl implements CredencialInterface {
 
     @Autowired
     private CredencialRepository rCredencial;
+
+    @Autowired
+    private CapacitacionInterface capacitacionService;
 
     @Override
     public Credencial newCredencial(Credencial credencial) {
@@ -105,5 +114,13 @@ public class CredencialServiceImpl implements CredencialInterface {
     }
 
 
-
+    public CredencialasDTO getCredencialesDTO(Long idEmpleado){
+        List<Capacitacion> capacitaciones = capacitacionService.findByEmpleadoID(idEmpleado);
+        CredencialasDTO dto = new CredencialasDTO();
+        for(Capacitacion c : capacitaciones){
+            dto.addCurso(c);
+        }
+        dto.completarInformacion();
+        return dto;
+    }
 }

@@ -1,16 +1,22 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Dto.CredencialasDTO;
 import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Enumarable.Jurisdiccion;
 import com.sima.intranet.Enumarable.TipoCredencial;
 import com.sima.intranet.Service.CredencialServiceImpl;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import jdk.jfr.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -71,5 +77,10 @@ public class CredencialController {
         lista.add(iCredencial.getEstadisticaCredencial(LocalDate.now(),Jurisdiccion.EZE , Gerencia.GER02, TipoCredencial.CREDENCIAL_FISICA));
 
         return lista;
+    }
+
+    @GetMapping("/credencialesDTO/{id}")
+    public ResponseEntity<CredencialasDTO> getInfoCredeciales(@PathVariable String id) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(iCredencial.getCredencialesDTO(Long.parseLong(id)));
     }
 }
