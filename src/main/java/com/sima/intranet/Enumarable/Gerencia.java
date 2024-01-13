@@ -30,7 +30,7 @@ public enum Gerencia {
         cell.setCellType(CellType.STRING);
         String dato = cell.getStringCellValue();
         for(Gerencia g : Gerencia.values()){
-            if(g.codigo.equalsIgnoreCase(dato.replace(" " , ""))){
+            if(g.codigo.equalsIgnoreCase(dato.trim())){
                 return g;
             }
         }

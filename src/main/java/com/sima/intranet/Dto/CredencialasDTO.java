@@ -1,14 +1,14 @@
 package com.sima.intranet.Dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sima.intranet.Entity.Capacitacion;
+import com.sima.intranet.Entity.Credencial;
 import com.sima.intranet.Enumarable.CursoHabilitante;
+import com.sima.intranet.Enumarable.TipoCredencial;
 import com.sima.intranet.Enumarable.TipoHabilitacion;
 import com.sima.intranet.Util.Strings;
 import com.sima.intranet.Util.UtilesFecha;
 import lombok.Data;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class CredencialasDTO implements Serializable {
     String numeroCredencial = "";
 
 
-    public void completarInformacion(){
+    public void completarInformacion(List<Credencial> credenciales){
 
         if(cursos.contains(CursoHabilitante.PSA001)){
             agregarHabilitiacionActiva(TipoHabilitacion.AGENTE_VIGILADOR);
@@ -73,12 +73,41 @@ public class CredencialasDTO implements Serializable {
             agregarHabilitiacionInactiva(TipoHabilitacion.BRIGADISTA);
         }
         for(CursoHabilitante c : CursoHabilitante.values()){
+            String fecha = cursosFecha.get(c) != null ?  Strings.formatearFecha(cursosFecha.get(c)) : "#N/A";
                 agente.add(
                         new Agente(
-                                Strings.formatearFecha(cursosFecha.get(c)),
+                                fecha,
                                 c.name() ,
                                 c.titulo));
         }
+
+        if(credenciales != null && credenciales.size() > 0){
+            Credencial cred = credenciales.get(0);
+            Boolean esFisica = cred.getTipo().equals(TipoCredencial.CREDENCIAL_FISICA);
+            if(esFisica){
+                addVigilador("CREDENCIAL FISICA" , "SI");
+                addVigilador("NOTA MINISTERIO" , "NO");
+            }else{
+                addVigilador("CREDENCIAL FISICA" , "NO");
+                addVigilador("NOTA MINISTERIO" , "SI");
+            }
+
+            addVigilador( "GERENCIA" ,cred.getGerencia().descrip );
+            addVigilador( "VENCIMIENTO" , Strings.formatearFecha(cred.getFechaVencimentoCredencial()));
+            addVigilador("JURISDICCIÓN" , cred.getJurisdiccion().descrip);
+            numeroCredencial = cred.getCodigoCredencial();
+        }else{
+            addVigilador("CREDENCIAL FISICA" , "#N/A");
+            addVigilador("NOTA MINISTERIO" , "#N/A");
+            addVigilador( "GERENCIA" ,"#N/A" );
+            addVigilador( "VENCIMIENTO" , "#N/A");
+            addVigilador("JURISDICCIÓN" , "#N/A");
+            numeroCredencial = "#N/A";
+        }
+    }
+
+    private void addVigilador(String nombre, String valor) {
+        vigilador.add(new Vigilador(nombre , valor));
     }
 
     private void agregarHabilitiacionInactiva(TipoHabilitacion tipo) {
@@ -98,6 +127,8 @@ public class CredencialasDTO implements Serializable {
             cursosFecha.put(c.getTipoCurso() , c.getFechaVencimentoCapacitacion());
         }
     }
+
+
 }
 @Data
 class Habilitacion{
@@ -125,4 +156,9 @@ class Agente{
 class  Vigilador{
     String nombre;
     String valor;
+
+    public Vigilador(String nombre, String valor) {
+        this.nombre = nombre;
+        this.valor = valor;
+    }
 }

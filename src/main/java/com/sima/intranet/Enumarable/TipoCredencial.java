@@ -29,6 +29,10 @@ public enum TipoCredencial {
             return TipoCredencial.CREDENCIAL_FISICA;
         }else if(esCredencialFisica.trim().equals("NO")){
             return  TipoCredencial.NOTA_MINISTERIO;
+        }else if(esCredencialFisica.trim().equals("CREDENCIAL FISICA")){
+            return TipoCredencial.CREDENCIAL_FISICA;
+        }else if(esCredencialFisica.trim().equals("NOTA MINISTERIO")){
+            return TipoCredencial.NOTA_MINISTERIO;
         }else{
             return null;
         }

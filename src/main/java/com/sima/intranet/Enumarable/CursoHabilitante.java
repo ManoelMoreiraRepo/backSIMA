@@ -9,7 +9,7 @@ public enum CursoHabilitante {
     PSA004("P004" , 14 , "CURSO SUPERVISOR"),
     PSA005("P005", 15 , "TERMINAL CARGA"),
     PSA011("P011" , 16 , "A.C.C.I"),
-    ANAC001("BRIG" , 17 , "PREVENCION Y EXTINCION INCENDIOS EN AEROPUERTOS"),
+    ANAC001("BRIG" , 17 , "INCENDIOS AEROPUESTOS"),
     ANAC002("AMAN" , 18 , "TALLER AMAN");
 
     public String cabeceraImportacion;

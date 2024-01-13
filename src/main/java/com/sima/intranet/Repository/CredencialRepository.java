@@ -26,4 +26,6 @@ public interface CredencialRepository extends JpaRepository<Credencial,Long> {
     Long countCredencialByFechaVencimentoCredencialBetweenAndJurisdiccionAndGerenciaAndTipo(LocalDate fecha1 , LocalDate fecha2 , Jurisdiccion jurisdiccion ,Gerencia gerencia , TipoCredencial tipo);
     @Query("SELECT COUNT(e) FROM Empleado e WHERE (SELECT COUNT(c) FROM Credencial c WHERE c.empleado = e AND c.jurisdiccion =:jurisdiccion AND c.gerencia = :gerencia AND c.tipo = :tipo AND c.fechaVencimentoCredencial > CURRENT_DATE ) > 0 AND e.gerencia =:gerencia ")
     Long getCantidadAptos(Jurisdiccion jurisdiccion, Gerencia gerencia, TipoCredencial tipo);
+
+    List<Credencial> findByEmpleadoIdEmpleado(Long idEmpleado);
 }

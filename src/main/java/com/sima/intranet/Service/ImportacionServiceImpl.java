@@ -82,8 +82,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "CODE GERENCIA", "GERENCIA", "CATEGORIA", "SINDICATO" , "EMPRESA"
     );
 
-    public static final List<String> FORMATO_CREDENCIALES = List.of(
+    public static final List<String> FORMATO_CREDENCIALES_AEROPUERTO = List.of(
             "Apellido", "Nombre/s", "C.U.I.L.", "DNI", "CREDENCIAL FISICA", "NOTA", "VENCIMIENTO", "JURISDICCION", "GERENCIA"
+    );
+
+
+    public static final List<String> FORMATO_CREDENCIALES_CABA_PROV = List.of(
+            "Legajo", "Apellido", "Nombre", "DNI", "Empresa", "Gerencia",
+            "Numero Credencial", "Estado Credencial", "Vto Credencial",
+            "Jurisdicion", "Tipo Credencial", "Foto Credencial"
     );
 
 
@@ -148,7 +155,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO LEGAJO");
                 insertarFormatoLegajo(sheet , logImportacion);
-            } else if(FORMATO_CREDENCIALES.containsAll(cabezera)){
+            } else if(FORMATO_CREDENCIALES_AEROPUERTO.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO CREDENCIALES");
                 insertarFomatoCredenciales(sheet , logImportacion);
             }else if(FORMATO_OFERTAS_EMPLEO.containsAll(cabezera)){
@@ -169,11 +176,17 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_BASE_GPS.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO INFRACCIONES.");
                 insertarFormatoBaseGPS(sheet , logImportacion);
+            }else if(FORMATO_CREDENCIALES_CABA_PROV.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO CREDECINALES CABA PROV.");
+                insertarCredencialesCabaProv(sheet , logImportacion);
             }else{
                 //cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 //logger.info("El formato de este excel no esta implementado.");
                 System.out.println("Cabezeras no reconocidas");
                 System.out.println(cabezera);
+
+                logImportacion.addMensaje("Archivo no implementado.");
+                logImportacion.addMensaje("Formato: " + cabezera.toString());
 
             }
             workbook.close();
@@ -187,6 +200,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
 
     }
+
+
 
     private void insertarFormatoBaseGPS(Sheet sheet, LogImportacion logImportacion) {
         logImportacion.addMensaje("INICIO FORMATO BASE GPS.");
@@ -542,6 +557,76 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             ofertas.add(oferta);
         }
         ofertaService.saveAll(ofertas);
+    }
+
+
+    private void insertarCredencialesCabaProv(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO Formato Credenciales  CABA PROV.");
+        for(Row row : sheet){
+            if (row.getRowNum() == 0) {
+                continue;
+            }
+            Cell celdaDni = row.getCell(3);
+            if(celdaDni == null){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
+                continue;
+            }
+            celdaDni.setCellType(CellType.STRING);
+            String dni = celdaDni.getStringCellValue().trim();
+            if(dni.isEmpty()){
+                logImportacion.addMensaje("DNI no encontrado, fila : " + row.getRowNum());
+                continue;
+            }
+            Optional<Empleado> empleadoOpt = empledoService.findByDNI(dni);
+
+            if(!empleadoOpt.isPresent()){
+                logger.error("Empleado no encontrado, DNI : " + dni);
+                logImportacion.addMensaje("Empleado no encontrado, DNI : " + dni);
+                continue;
+            }
+            Empleado empleado = empleadoOpt.get();
+            Cell celGerencia = row.getCell(5);
+            Gerencia gerencia = Gerencia.getGerencia(celGerencia);
+
+            Cell celJurisdiccion = row.getCell(9);
+            Jurisdiccion jurisdiccion = Jurisdiccion.getJurisdiccion(getStringValorCelda(celJurisdiccion));
+
+            if(gerencia == null || jurisdiccion == null){
+                logger.error("Jurisdiccion o generencia invalida, DNI : " + dni);
+                logImportacion.addMensaje("Jurisdiccion o generencia invalida, DNI : " + dni);
+                continue;
+            }
+            Credencial credencial = credencialService.findByJurisdiccionAndGerencia(jurisdiccion , gerencia , empleado);
+
+            if(credencial == null){
+                credencial = new Credencial();
+                credencial.setJurisdiccion(jurisdiccion);
+                credencial.setEmpleado(empleado);
+                credencial.setGerencia(gerencia);
+            }
+            Cell cellTipo = row.getCell(10);
+            credencial.setTipo(TipoCredencial.getTipoCredencialImportacion(getStringValorCelda(cellTipo)));
+            credencial.setCodigoCredencial(getStringValorCelda(row.getCell(6)));
+            Cell cellVencimiento = row.getCell(8);
+            try {
+                if(cellVencimiento != null && cellVencimiento.getDateCellValue()!=null){
+                    if(!cellVencimiento.getCellType().equals(CellType.NUMERIC)){
+                        credencial.setFechaVencimentoCredencial(getLocalDateFromExcel(cellVencimiento.getDateCellValue()));
+                    }else{
+                        credencial.setFechaVencimentoCredencial(getLocalDateFromExcelNumeric(cellVencimiento.getNumericCellValue()));
+                    }
+                }
+
+            }catch (IllegalStateException e){
+                logImportacion.addMensaje("Fecha de vencimiento invalida, DNI: " + dni);
+                logger.error("Fecha de vencimiento invalida, DNI: " + dni);
+            }
+            if(empleado.getCredencial() == null) {
+                empleado.setCredencial(new ArrayList<>());
+            }
+            empleado.getCredencial().add(credencial);
+            credencialService.save(credencial);
+        }
     }
 
     @Transactional

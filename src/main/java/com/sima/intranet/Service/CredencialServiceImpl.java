@@ -117,10 +117,11 @@ public class CredencialServiceImpl implements CredencialInterface {
     public CredencialasDTO getCredencialesDTO(Long idEmpleado){
         List<Capacitacion> capacitaciones = capacitacionService.findByEmpleadoID(idEmpleado);
         CredencialasDTO dto = new CredencialasDTO();
+        List<Credencial> credenciales =  rCredencial.findByEmpleadoIdEmpleado(idEmpleado);
         for(Capacitacion c : capacitaciones){
             dto.addCurso(c);
         }
-        dto.completarInformacion();
+        dto.completarInformacion(credenciales);
         return dto;
     }
 }
