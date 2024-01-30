@@ -19,4 +19,6 @@ public interface IndumentariaRepository extends JpaRepository<Indumentaria, Long
     List<Indumentaria> listByIdIndumentaria( @Param ("idEmpleado")Long idEmpleado);
 
     Optional<Indumentaria> findByEmpleadoAndFechaUltimaEntregaIndumentaria(Empleado empleado , LocalDate fechaUltimaEntregaIndumentaria);
+
+    Optional<Indumentaria> findByEmpleadoAndFechaUltimaEntregaIndumentariaAndCodigoAndModeloIndumentaria(Empleado empleado , LocalDate fechaUltimaEntregaIndumentaria , String codigo , String  modeloIndumentaria);
 }

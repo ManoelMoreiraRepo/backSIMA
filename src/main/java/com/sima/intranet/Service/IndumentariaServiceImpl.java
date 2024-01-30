@@ -39,8 +39,8 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
 
         if (indumentariaEncontrada.get() != null) {
             indumentariaEncontrada.get().setNombreIndumentaria(indumentaria.getNombreIndumentaria());
-            indumentariaEncontrada.get().setTipoIndumentaria(indumentaria.getTipoIndumentaria());
-            indumentariaEncontrada.get().setTalleIndumentaria(indumentaria.getTipoIndumentaria());
+            indumentariaEncontrada.get().setFamilia(indumentaria.getFamilia());
+            indumentariaEncontrada.get().setTalle(indumentaria.getTalle());
             rIndumentaria.save(indumentaria);
         }
         return null;
@@ -65,6 +65,14 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
     @Override
     public void saveAll(List<Indumentaria> indumentariaList) {
         this.rIndumentaria.saveAll(indumentariaList);
+    }
+
+    @Override
+    public Optional<Indumentaria> findByEmpleadoFechaCodigoModelo(Empleado empleado, LocalDate fechaUltima, String codigo, String modelo) {
+        if(empleado == null  || fechaUltima == null || codigo == null || codigo.isEmpty() || modelo == null || modelo.isEmpty()){
+            return Optional.empty();
+        }
+        return this.rIndumentaria.findByEmpleadoAndFechaUltimaEntregaIndumentariaAndCodigoAndModeloIndumentaria(empleado , fechaUltima , codigo , modelo);
     }
 
 }

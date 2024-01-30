@@ -14,29 +14,35 @@ import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Indumentaria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-   /* @Column
-    private String tipoIndumentaria;*/
+    @Column
+    private String codigo;
     
     @Column
     private String nombreIndumentaria;
 
     @Column
-    private String tipoIndumentaria;
+    private String familia;
+
+    @Column
+    private String talle;
 
     @Column
     private Long cantidad;
-    
-    @Column
-    private String talleIndumentaria;
 
     @Column
     private String modeloIndumentaria;

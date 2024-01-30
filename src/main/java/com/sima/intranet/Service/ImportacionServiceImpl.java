@@ -119,6 +119,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             "P011", "BRIG", "AMAM", "Mail", "Tel Particular", "hoy", "5", "15",
             "Direccion", "CP", "Fecha de nac.");
 
+    public static final List<String> FORMATO_ESTANDAR_INDUMENTARIA= List.of("DNI", "APELLIDO_NOMBRE", "FAMILIA", "CODIGO PRODUCTO", "PRODUCTO", "MODELO", "TALLE", "CANTIDAD", "FECHA_ULTIMA", "FECHA_PROXIMA");
 
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
@@ -179,6 +180,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_CREDENCIALES_CABA_PROV.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO CREDECINALES CABA PROV.");
                 insertarCredencialesCabaProv(sheet , logImportacion);
+            }else if(FORMATO_ESTANDAR_INDUMENTARIA.containsAll(cabezera)){
+                logger.info("Actualiacion de FORMATO ESTANDAR INDUMENTARIA.");
+                insertarFormatoEstandarIndumentaria(sheet , logImportacion);
             }else{
                 //cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 //logger.info("El formato de este excel no esta implementado.");
@@ -201,6 +205,52 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     }
 
+    private void insertarFormatoEstandarIndumentaria(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO FORMATO ESTANDAR INDUMENTARIA");
+        List<Indumentaria> indumentariaList = new ArrayList<>();
+        for(Row row :sheet){
+            if(row.getRowNum() == 0){
+                continue;
+            }
+            String dni = getStringValorCelda(row.getCell(0));
+
+            if(dni == null){
+                logImportacion.addMensaje("Dni no encontrado. row nro : " + row.getRowNum());
+                logger.error("Dni no encontrado. row nro : " + row.getRowNum());
+                continue;
+            }
+
+            Optional<Empleado> empleado = empledoService.findByDNI(dni.trim());
+
+            if(empleado.isEmpty()){
+                logImportacion.addMensaje("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni );
+                logger.error("Empleado no encontrado para realizar el cruce de informacion. DNI = " + dni);
+                continue;
+            }
+            LocalDate fechaUltima = getLocalDateFromExcel(row.getCell(8) , logImportacion , row.getRowNum());
+            String codigo = getStringValorCelda(row.getCell(3));
+            String modelo = getStringValorCelda(row.getCell(5));
+
+            Indumentaria indumentaria = indumentariaService.findByEmpleadoFechaCodigoModelo(empleado.get() , fechaUltima , codigo , modelo)
+                    .orElse(Indumentaria.builder()
+                            .empleado(empleado.get())
+                            .fechaUltimaEntregaIndumentaria(fechaUltima)
+                            .modeloIndumentaria(modelo)
+                            .codigo(codigo)
+                            .build()
+                    );
+            indumentaria.setFamilia(getStringValorCelda(row.getCell(2)));
+            indumentaria.setNombreIndumentaria(getStringValorCelda(row.getCell(4)));
+            indumentaria.setTalle(getStringValorCelda(row.getCell(6)));
+            if(row.getCell(7)!=null){
+                indumentaria.setCantidad(Double.valueOf(row.getCell(7).getNumericCellValue()).longValue());
+            }
+            indumentaria.setFechaProximaEntregaIndumentaria(getLocalDateFromExcel(row.getCell(9) , logImportacion , row.getRowNum()));
+
+            indumentariaList.add(indumentaria);
+        }
+        indumentariaService.saveAll(indumentariaList);
+    }
 
 
     private void insertarFormatoBaseGPS(Sheet sheet, LogImportacion logImportacion) {
@@ -321,7 +371,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
             indu.setNombreIndumentaria(getStringValorCelda(row.getCell(2)));
             indu.setModeloIndumentaria(getStringValorCelda(row.getCell(3)));
-            indu.setTalleIndumentaria(getStringValorCelda(row.getCell(4)));
+            indu.setTalle(getStringValorCelda(row.getCell(4)));
             if(row.getCell(5)!=null){
                 indu.setCantidad(Double.valueOf(row.getCell(5).getNumericCellValue()).longValue());
             }
@@ -629,7 +679,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
     }
 
-    @Transactional
     private void insertarFomatoCredenciales(Sheet sheet, LogImportacion logImportacion) {
         logImportacion.addMensaje("INICIO Formato Credenciales.");
         for(Row row : sheet){

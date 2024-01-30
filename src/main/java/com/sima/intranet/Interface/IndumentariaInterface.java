@@ -26,4 +26,6 @@ public interface IndumentariaInterface {
     Optional<Indumentaria> findByEmpleadoAndFechaEntrega(Empleado empleado , LocalDate fecha);
 
     void saveAll(List<Indumentaria> indumentariaList);
+
+    Optional<Indumentaria> findByEmpleadoFechaCodigoModelo(Empleado empleado, LocalDate fechaUltima, String codigo, String modelo);
 }
