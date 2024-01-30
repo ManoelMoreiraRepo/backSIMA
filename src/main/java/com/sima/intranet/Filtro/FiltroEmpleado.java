@@ -31,12 +31,15 @@ public class FiltroEmpleado extends Filtro {
         }
 
         if(Strings.isNotNullOrEmpty(this.getNombreEmpleado())){
-            this.setNombreEmpleado("%"+this.getNombreEmpleado().trim()+"%");
-            cond.add(builder.or(
-                    builder.like(root.get(Empleado_.DNI) , this.getNombreEmpleado()),
-                    builder.like(root.get(Empleado_.NOMBRE) , this.getNombreEmpleado()),
-                    builder.like(root.get(Empleado_.APELLIDO) , this.getNombreEmpleado())
-            ));
+            String[] arrayEmpl = this.getNombreEmpleado().split(" ");
+            for(String item : arrayEmpl){
+                String dato = "%"+item+"%";
+                cond.add(builder.or(
+                        builder.like(root.get(Empleado_.DNI) , dato),
+                        builder.like(root.get(Empleado_.NOMBRE) , dato),
+                        builder.like(root.get(Empleado_.APELLIDO) , dato)
+                ));
+            }
         }
 
         if(Strings.isNotNullOrEmpty(this.getGerencia())){
