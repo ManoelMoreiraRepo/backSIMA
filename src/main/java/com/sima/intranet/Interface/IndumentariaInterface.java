@@ -1,8 +1,10 @@
 
 package com.sima.intranet.Interface;
 
+import com.sima.intranet.Dto.IndumentariaDTO;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Indumentaria;
+import com.sima.intranet.Filtro.FiltroIndumentaria;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,4 +30,6 @@ public interface IndumentariaInterface {
     void saveAll(List<Indumentaria> indumentariaList);
 
     Optional<Indumentaria> findByEmpleadoFechaCodigoModelo(Empleado empleado, LocalDate fechaUltima, String codigo, String modelo);
+
+    List<IndumentariaDTO> obtenerDatosPorAñoYGerencia(FiltroIndumentaria filtro);
 }

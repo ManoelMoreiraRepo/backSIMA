@@ -1,9 +1,10 @@
 package com.sima.intranet.Enumarable;
 
+import com.sima.intranet.Interface.Filtrable;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 
-public enum Gerencia {
+public enum Gerencia implements Filtrable {
 
     GER01( "G01" , "GRUPO SIMA" , "GROUP"  ),
     GER02( "G02" , "AEROPUERTOS" , "GPS" ),//GPS
@@ -53,11 +54,15 @@ public enum Gerencia {
     public String getCodigo() {
         return codigo;
     }
-    /* Contador por gerencia:
-    cod:001 Grupo sima-Operacio central
-    cod:002 La biza - Edu
-    cod:003 Edenor - Casteli
-    cod:004 Global- Canela
-    cod:005 Aeropuertos-sosa
-     cod:006 Ecoklin- sandra*/
+
+    @Override
+    public String getId() {
+        return name();
+    }
+
+    @Override
+    public String getDescipcion() {
+        return descrip;
+    }
+
 }

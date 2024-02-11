@@ -1,13 +1,20 @@
 package com.sima.intranet.Service;
 
+import com.sima.intranet.Dao.IndumetariaDAO;
+import com.sima.intranet.Dto.IndumentariaDTO;
 import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Indumentaria;
+import com.sima.intranet.Enumarable.Gerencia;
+import com.sima.intranet.Filtro.FiltroIndumentaria;
 import com.sima.intranet.Interface.IndumentariaInterface;
 import com.sima.intranet.Repository.IndumentariaRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +23,9 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
 
     @Autowired
     private IndumentariaRepository rIndumentaria;
+
+    @Autowired
+    private IndumetariaDAO indumetariaDAO;
 
     @Override
     public Indumentaria newIndumentaria(Indumentaria indumentaria) {
@@ -73,6 +83,21 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
             return Optional.empty();
         }
         return this.rIndumentaria.findByEmpleadoAndFechaUltimaEntregaIndumentariaAndCodigoAndModeloIndumentaria(empleado , fechaUltima , codigo , modelo);
+    }
+
+    @Override
+    public List<IndumentariaDTO> obtenerDatosPorAñoYGerencia(FiltroIndumentaria filtro) {
+        List<Object[]> resultado = this.indumetariaDAO.obtenerDatosPorAñoYGerencia(filtro);
+        List<IndumentariaDTO> dtos = new ArrayList<>();
+        for(Gerencia g : Gerencia.values()){
+            List<Object[]> rowsDeG = resultado.stream().filter(e-> String.valueOf(e[0]).equals(g.name())).toList();
+            dtos.add(IndumentariaDTO.builder()
+                    .datos(rowsDeG)
+                    .gerencia(g.descrip)
+                    .build());
+        }
+
+        return dtos;
     }
 
 }

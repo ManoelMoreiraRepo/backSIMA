@@ -1,11 +1,7 @@
 package com.sima.intranet.Filtro;
 
-import com.sima.intranet.Entity.Empleado;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import lombok.Data;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
 

@@ -1,9 +1,12 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Dto.IndumentariaDTO;
 import com.sima.intranet.Entity.Indumentaria;
+import com.sima.intranet.Filtro.FiltroIndumentaria;
 import com.sima.intranet.Service.IndumentariaServiceImpl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,5 +52,10 @@ public class IndumentariaController {
     @GetMapping("/detail/{empleadoId}")
     public List<Indumentaria> findIndumentariaByIdEmpleado(@PathVariable("empleadoId") long id) {
         return iIndumentariaService.listByIdEmpleado(id);
+    }
+
+    @PostMapping("/vistaIntereactiva")
+    public ResponseEntity<List<IndumentariaDTO>> getIndumentariaVistaInteractiva(@RequestBody FiltroIndumentaria filtro){
+        return ResponseEntity.ok().body(iIndumentariaService.obtenerDatosPorAñoYGerencia(filtro));
     }
 }
