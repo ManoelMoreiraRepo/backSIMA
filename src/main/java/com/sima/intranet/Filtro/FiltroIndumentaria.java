@@ -13,6 +13,10 @@ import java.util.List;
 public class FiltroIndumentaria extends Filtro{
     private List<Integer> anios;
     private List<Gerencia> gerencias;
+    private String objetivo;
+    private String familia;
+    private String producto;
+    private String modelo;
     @Override
     public <T> Predicate[] getPredicates(CriteriaQuery<T> query, CriteriaBuilder builder, List<From> from) {
         return new Predicate[0];

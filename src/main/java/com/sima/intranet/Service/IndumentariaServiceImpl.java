@@ -89,7 +89,11 @@ public class IndumentariaServiceImpl implements IndumentariaInterface {
     public List<IndumentariaDTO> obtenerDatosPorAñoYGerencia(FiltroIndumentaria filtro) {
         List<Object[]> resultado = this.indumetariaDAO.obtenerDatosPorAñoYGerencia(filtro);
         List<IndumentariaDTO> dtos = new ArrayList<>();
-        for(Gerencia g : Gerencia.values()){
+        Gerencia[] gerencias = Gerencia.values();
+        if(filtro.getGerencias() != null && !filtro.getGerencias().isEmpty()){
+            gerencias = filtro.getGerencias().toArray(new Gerencia[filtro.getGerencias().size()]);
+        }
+        for(Gerencia g : gerencias){
             List<Object[]> rowsDeG = resultado.stream().filter(e-> String.valueOf(e[0]).equals(g.name())).toList();
             dtos.add(IndumentariaDTO.builder()
                     .datos(rowsDeG)

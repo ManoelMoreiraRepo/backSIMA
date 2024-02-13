@@ -6,6 +6,7 @@ import com.sima.intranet.Entity.Empleado;
 import com.sima.intranet.Entity.Indumentaria;
 import com.sima.intranet.Enumarable.Gerencia;
 import com.sima.intranet.Filtro.FiltroIndumentaria;
+import com.sima.intranet.Util.Strings;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
@@ -24,7 +25,6 @@ public class IndumetariaDAO {
         CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
         Root<Indumentaria> indumentariaRoot = cq.from(Indumentaria.class);
         Join<Indumentaria, Empleado> empleadoJoin = indumentariaRoot.join(Indumentaria_.EMPLEADO , JoinType.INNER);
-
         cq.multiselect(
                 empleadoJoin.get(Empleado_.GERENCIA),
                 cb.function("YEAR", Integer.class, indumentariaRoot.get(Indumentaria_.FECHA_ENTREGA)),
@@ -98,6 +98,20 @@ public class IndumetariaDAO {
         if(filtro.getGerencias() != null && !filtro.getGerencias().isEmpty()){
             cond.add(empleadoJoin.get(Empleado_.GERENCIA).in(filtro.getGerencias()));
         }
+
+        if(Strings.isNotNullOrEmpty(filtro.getObjetivo())){
+            cond.add(cb.equal(empleadoJoin.get(Empleado_.OBJETIVO) , filtro.getObjetivo().trim()));
+        }
+        if(Strings.isNotNullOrEmpty(filtro.getFamilia())){
+            cond.add(cb.equal(indumentariaRoot.get(Indumentaria_.FAMILIA) , filtro.getFamilia().trim()));
+        }
+        if(Strings.isNotNullOrEmpty(filtro.getProducto())){
+            cond.add(cb.equal(indumentariaRoot.get(Indumentaria_.NOMBRE) , filtro.getProducto().trim()));
+        }
+        if(Strings.isNotNullOrEmpty(filtro.getModelo())){
+            cond.add(cb.equal(indumentariaRoot.get(Indumentaria_.MODELO) , filtro.getModelo().trim()));
+        }
+
         cq.where(
                 cond.toArray(new Predicate[]{})
         );

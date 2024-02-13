@@ -2,7 +2,11 @@ package com.sima.intranet.Enumarable;
 
 public enum TipoFiltro {
     GERENCIA,
-    OBJETIVO;
+    OBJETIVO,
+
+    FAMILIA,
+    PRODUCTO,
+    MODELO;
 
     TipoFiltro(){
 

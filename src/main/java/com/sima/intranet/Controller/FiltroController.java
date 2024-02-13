@@ -19,10 +19,23 @@ public class FiltroController {
         return filtroService.procesarFiltroSelect(tipo , seleccione);
     }
 
-    @GetMapping("/objetivoSelect2")
-    public FiltroSelect[] geObjetivoSelect2(@RequestParam String texto){
-        FiltroSelect[] array = new FiltroSelect[1];
-        array[0]= new FiltroSelect("VALOR" + texto , "VISTA" + texto);
+    @GetMapping("/select2")
+    public FiltroSelect[] geObjetivoSelect2(@RequestParam String texto , @RequestParam TipoFiltro tipo){
+        FiltroSelect[] array = new FiltroSelect[0];
+        switch (tipo){
+            case OBJETIVO :
+                array = filtroService.getSelect2Objetivo(texto);
+                break;
+            case FAMILIA:
+                array = filtroService.getSelect2Familia(texto);
+                break;
+            case PRODUCTO:
+                array = filtroService.getSelect2Producto(texto);
+                break;
+            case MODELO:
+                array = filtroService.getSelect2Modelo(texto);
+                break;
+        }
         return array;
     }
 }
