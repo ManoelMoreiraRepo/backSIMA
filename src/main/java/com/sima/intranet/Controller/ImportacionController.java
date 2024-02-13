@@ -43,14 +43,14 @@ public class ImportacionController {
     @PostMapping("/archivo")
     public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file , HttpServletRequest request) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("No se puedo recibir el archivo.");
+            return ResponseEntity.badRequest().body("No se pudo recibir el archivo.");
         }
 
 
         try {
             String originalFileName = file.getOriginalFilename();
-            if(originalFileName.endsWith(".xls")){
-                throw new ParametroInvalidoException("La extension xls no esta permitida.");
+            if(!originalFileName.endsWith(".xlsx")){
+                throw new ParametroInvalidoException("Solo esta permitida la importación de archivos xlsx.");
             }
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -63,9 +63,11 @@ public class ImportacionController {
 
             Usuario usuario = usuarioService.getUsuarioActivo(request).orElse(null);
 
+            String mensaje = importador.reconocerFormatoImplementado(String.valueOf(targetPath) , newFileName , usuario);
+
             importador.procesarImportacion(String.valueOf(targetPath) , newFileName , usuario);
 
-            return ResponseEntity.ok("Archivo cargado con éxito.");
+            return ResponseEntity.ok(mensaje);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error al cargar el archivo: " + e.getMessage());
         }

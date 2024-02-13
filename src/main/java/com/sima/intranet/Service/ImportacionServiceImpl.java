@@ -121,6 +121,60 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     public static final List<String> FORMATO_ESTANDAR_INDUMENTARIA= List.of("DNI", "APELLIDO_NOMBRE", "FAMILIA", "CODIGO PRODUCTO", "PRODUCTO", "MODELO", "TALLE", "CANTIDAD", "FECHA_ULTIMA", "FECHA_PROXIMA");
 
+
+    public String reconocerFormatoImplementado(String ruta, String nombreArchivo, Usuario usuario) {
+        String mensaje = "";
+        try {
+            FileInputStream excelFile = new FileInputStream(ruta);
+            Workbook workbook = new XSSFWorkbook(excelFile);
+            Sheet sheet = workbook.getSheetAt(0);
+            List<String> cabezera = new ArrayList<>();
+            if(sheet.getRow(0) == null){
+                return "No se reconoce el formato. No se encontraron las cabezeras.";
+            }
+            for (Cell cell : sheet.getRow(0)) {
+                cabezera.add(getStringValorCelda(cell));
+            }
+
+            if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
+                mensaje = "Actualiación de FORMATO BEGERMAN iniciado.";
+            } else if (cabezera.containsAll(FORMATO_SUELDO_NOMINA)) {
+                mensaje = "Actualiación de SUELDO NOMINA iniciado.";
+            } else if(FORMATO_LEGAJO_NOMINA.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO LEGAJO iniciado.";
+            } else if(FORMATO_CREDENCIALES_AEROPUERTO.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO CREDENCIALES iniciado";
+            }else if(FORMATO_OFERTAS_EMPLEO.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO OFERTAS EMPLEO iniciado.";
+            } else if(cabezera.containsAll(FORMATO_GRILLA)){
+                mensaje = "Actualiación de FORMATO GRILLA iniciado.";
+            } else if(FORMATO_INSERSION_MOVILES.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO INSERSION MOVILES iniciado.";
+            }else if(FORMATO_INFRACCIONES.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO INFRACCIONES iniciado.";
+            }else if(FORMATO_INDUMENTARIA.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO INFRACCIONES iniciado.";
+            }else if(FORMATO_BASE_GPS.containsAll(cabezera)){
+                mensaje = "Actualiación de FORMATO INFRACCIONES iniciado.";
+            }else if(FORMATO_CREDENCIALES_CABA_PROV.containsAll(cabezera)){
+                mensaje = "Actualiacion de FORMATO CREDECINALES CABA PROV iniciado.";
+            }else if(FORMATO_ESTANDAR_INDUMENTARIA.containsAll(cabezera)){
+                mensaje = "Actualiacion de FORMATO ESTANDAR INDUMENTARIA iniciado.";
+            }else{
+                mensaje = "Formato no implementado.";
+            }
+            workbook.close();
+            excelFile.close();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            logger.error("Error al intentar realizar la importacion.");
+            mensaje = "Ocurrio un error al intentar reconocer el formato.";
+        }
+        return mensaje;
+    }
+
+
+
     /**
      * Metodo asincrono que determina cual formato se esta intentando actualizar.
      *
@@ -128,6 +182,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
      * @param nombreArchivo
      * @param usuario
      */
+
+
+
     @Async
     public void procesarImportacion(String ruta, String nombreArchivo, Usuario usuario) {
         LogImportacion logImportacion = new LogImportacion(LocalDateTime.now() , nombreArchivo , usuario);
