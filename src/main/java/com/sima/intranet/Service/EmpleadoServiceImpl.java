@@ -188,15 +188,10 @@ public class EmpleadoServiceImpl implements EmpleadoInterface {
         List<Map<String,Object>> lista = new ArrayList<>();
 
         for(Empresa empresa : Empresa.values()){
-            /*if(empresa.equals(Empresa.SIN_EMPRESA)){
+            if(empresa.equals(Empresa.SIN_EMPRESA)){
                 continue;
-            }*/
+            }
             Long result = empleadoDAO.getCantidadPorEmpresa(empresa);
-           /* List<String> descrip = empresa.gerencias.stream().map(Gerencia::getCodigo).collect(Collectors.toList());
-            String descripcion = String.join(" / " , descrip);
-            if(descripcion.equals("")){
-                descripcion= "SIN GERENCIAS";
-            }*/
             lista.add(Map.of("cant", result , "titulo", empresa.descripcion , "descrip", ""));
         }
 

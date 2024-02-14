@@ -35,6 +35,12 @@ public class Usuario {
         this.password = encode;
     }
 
+    public Usuario(String username, String encode , String correoUsuario) {
+        this.nombreUsuario = username;
+        this.password = encode;
+        this.correoUsuario = correoUsuario;
+    }
+
     public Usuario() {
 
     }

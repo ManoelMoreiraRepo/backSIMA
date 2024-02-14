@@ -3,6 +3,8 @@ package com.sima.intranet.Interface;
 import com.sima.intranet.Entity.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Optional;
+
 public interface UsuarioInterface {
      /*Nuevo usuario*/
     Usuario newUser(Usuario newUser);
@@ -12,5 +14,7 @@ public interface UsuarioInterface {
     Usuario modifyUser(Usuario usuario);
     /*Elimina Usuario*/
     Boolean deleteUser(Long idUsuario);
+
+    Optional<Usuario> getUsuario(Long id);
 
  }

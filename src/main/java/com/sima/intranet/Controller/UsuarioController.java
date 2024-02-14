@@ -1,24 +1,21 @@
 package com.sima.intranet.Controller;
 
-import com.sima.intranet.Dto.UserInfoResponse;
+import com.sima.intranet.Dto.MessageResponse;
+import com.sima.intranet.Dto.SignupRequest;
+import com.sima.intranet.Entity.Mensaje;
 import com.sima.intranet.Entity.Usuario;
-import com.sima.intranet.Enumarable.ERole;
+import com.sima.intranet.Exception.ParametroInvalidoException;
 import com.sima.intranet.Interface.UsuarioInterface;
-import com.sima.intranet.Seguridad.jwt.JwtUtils;
-import jakarta.servlet.http.HttpServletRequest;
+import com.sima.intranet.Repository.UsuarioRepository;
+import com.sima.intranet.Service.AuthService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/Usuario")
@@ -26,6 +23,12 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioInterface iusuario;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
 
     @PostMapping("/nuevo")
@@ -46,6 +49,26 @@ public class UsuarioController {
     @GetMapping("/mostrar")
     public Iterable<Usuario> getAll() {
         return iusuario.getAll();
+    }
+
+    @GetMapping("/traer/{id}")
+    public ResponseEntity<Usuario> getUsuarioByID(@PathVariable Long id){
+        Optional<Usuario> usuario = this.iusuario.getUsuario(id);
+        if(usuario.isEmpty()){
+            throw new ParametroInvalidoException("Usuario no encontrado.");
+        }
+        return ResponseEntity.ok().body(usuario.get());
+    }
+
+    @PutMapping("/update")
+    @PreAuthorize("hasRole('MODERATOR')")
+    public ResponseEntity<MessageResponse> updateUsuario(@RequestBody SignupRequest signUpRequest){
+        Usuario user = authService.registrarOActualizarUsuario(signUpRequest);
+        if(user.getIdUsuario()!= 0L){
+         return ResponseEntity.ok().body(new MessageResponse("Usuario registrado correctamente."));
+        }else{
+            return  ResponseEntity.badRequest().body(new MessageResponse("Ocurrio un error al procesar el usuario."));
+        }
     }
 
     @PutMapping("/actualizar/{id}")

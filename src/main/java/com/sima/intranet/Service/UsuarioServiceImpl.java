@@ -55,6 +55,11 @@ public class UsuarioServiceImpl implements UsuarioInterface {
         return true;
     }
 
+    @Override
+    public Optional<Usuario> getUsuario(Long id) {
+        return this.rusuario.findById(id);
+    }
+
     public Optional<Usuario> getUsuarioActivo(HttpServletRequest request){
         String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.getJwtFromCookies(request));
         return rusuario.findByNombreUsuario(username);

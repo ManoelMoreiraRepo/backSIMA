@@ -1,26 +1,23 @@
 package com.sima.intranet.Controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sima.intranet.Dto.LoginRequest;
 import com.sima.intranet.Dto.MessageResponse;
 import com.sima.intranet.Dto.SignupRequest;
-import com.sima.intranet.Dto.UserInfoResponse;
-import com.sima.intranet.Entity.Role;
 import com.sima.intranet.Entity.Usuario;
 import com.sima.intranet.Enumarable.ERole;
+import com.sima.intranet.Exception.ParametroInvalidoException;
 import com.sima.intranet.Repository.RoleRepository;
 import com.sima.intranet.Repository.UsuarioRepository;
 import com.sima.intranet.Seguridad.UserDetailsImpl;
 import com.sima.intranet.Seguridad.jwt.JwtUtils;
+import com.sima.intranet.Service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,6 +46,9 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    AuthService authService;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
@@ -73,51 +73,13 @@ public class AuthController {
 
 
     @PostMapping("/signup")
+    @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByNombreUsuario(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Nombre de usuario no disponible."));
+        try {
+            authService.registrarOActualizarUsuario(signUpRequest);
+        }catch(ParametroInvalidoException e){
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
-
-      /*  if (userRepository.existsByCorreoUsuario(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email no disponible."));
-        }
-*/
-        Usuario user = new Usuario(signUpRequest.getUsername(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role no encontrado"));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role no encontrado"));
-                        roles.add(adminRole);
-
-                        break;
-                    case "mod":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role no encontrado"));
-                        roles.add(modRole);
-
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role no encontrado"));
-                        roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
-        userRepository.save(user);
-
         return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente."));
     }
 
