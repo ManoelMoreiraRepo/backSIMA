@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación de Solicitud de Nueva Cuenta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .datos {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .dato {
+            margin-bottom: 10px;
+        }
+
+        .dato span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Notificación de Solicitud de Nueva Cuenta</h2>
+    <p>Estimado Moderador,</p>
+    <p>Se ha recibido una solicitud para crear una nueva cuenta en la aplicación. A continuación, se detallan los datos del solicitante:</p>
+    <div class="datos">
+        <div class="dato">
+            <span>Nombre:</span> ${nombre}
+        </div>
+        <div class="dato">
+            <span>Apellido:</span> ${apellido}
+        </div>
+        <div class="dato">
+            <span>DNI:</span> ${dni}
+        </div>
+        <div class="dato">
+            <span>Correo:</span> ${correo}
+        </div>
+    </div>
+    <p>Por favor, proceda según corresponda.</p>
+    <p>Saludos,</p>
+    <p>Equipo de Soporte</p>
+</div>
+</body>
+
+</html>

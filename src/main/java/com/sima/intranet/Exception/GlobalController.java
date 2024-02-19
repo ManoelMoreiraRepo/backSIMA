@@ -1,7 +1,10 @@
 package com.sima.intranet.Exception;
 
+import com.sima.intranet.Dto.MessageResponse;
 import com.sima.intranet.Entity.Mensaje;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailSendException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,5 +29,11 @@ public class GlobalController {
     public  Mensaje excepcionGeneral(RuntimeException ex){
         Mensaje msj = new Mensaje(!ex.getMessage().isEmpty() ? ex.getMessage() : "Ocurrio un error.");
         return msj;
+    }
+
+    @ExceptionHandler(MailSendException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<MessageResponse> handleMailException(MailSendException ex){
+        return ResponseEntity.internalServerError().body(new MessageResponse("No se pudo procesar la solicitud."));
     }
 }

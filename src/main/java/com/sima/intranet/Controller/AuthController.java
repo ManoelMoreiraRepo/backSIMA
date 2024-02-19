@@ -2,6 +2,7 @@ package com.sima.intranet.Controller;
 
 import com.sima.intranet.Dto.LoginRequest;
 import com.sima.intranet.Dto.MessageResponse;
+import com.sima.intranet.Dto.NuevaCuentaDTO;
 import com.sima.intranet.Dto.SignupRequest;
 import com.sima.intranet.Entity.Usuario;
 import com.sima.intranet.Enumarable.ERole;
@@ -11,6 +12,8 @@ import com.sima.intranet.Repository.UsuarioRepository;
 import com.sima.intranet.Seguridad.UserDetailsImpl;
 import com.sima.intranet.Seguridad.jwt.JwtUtils;
 import com.sima.intranet.Service.AuthService;
+import com.sima.intranet.Service.EmailService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +24,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +54,9 @@ public class AuthController {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    EmailService emailService;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
@@ -59,8 +67,8 @@ public class AuthController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+                .map(GrantedAuthority::getAuthority)
+                .toList();
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails , roles.get(0));
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .build();
@@ -98,5 +106,23 @@ public class AuthController {
             return Map.of("role" , null);
         }
         return Map.of("role" , role.name());
+    }
+
+    @PostMapping("/sendEmail")
+    public ResponseEntity<MessageResponse> enviarMailNuevaCuenta(@RequestBody @Valid NuevaCuentaDTO cuenta){
+        boolean envioOk = false;
+        try {
+            envioOk = emailService.sendEmailNuevaCuenta(cuenta);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if(envioOk){
+            return ResponseEntity.ok().body(new MessageResponse("Se envio correctamente su solicitud. Pronto le enviaremos un email."));
+        }else{
+            return  ResponseEntity.badRequest().body(new MessageResponse("No se pudo procesar la solicitud."));
+        }
     }
 }
