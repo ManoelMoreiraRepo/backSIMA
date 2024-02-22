@@ -285,6 +285,13 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 continue;
             }
             LocalDate fechaUltima = getLocalDateFromExcel(row.getCell(8) , logImportacion , row.getRowNum());
+
+            if(fechaUltima == null){
+                logImportacion.addMensaje("Fecha de entrega invalida, no es posible realizar la importación. Fila: " + row.getRowNum() );
+                logger.error("Fecha de entrega invalida, no es posible realizar la importación. Fila: " + row.getRowNum());
+                continue;
+            }
+
             String codigo = getStringValorCelda(row.getCell(3));
             String modelo = getStringValorCelda(row.getCell(5));
 
