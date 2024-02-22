@@ -22,7 +22,10 @@ public class EmailService {
 
     private JavaMailSender mailSender;
 
-    private static String RUTA_TEMPLATE_NUEVA_CUENTA = "src/main/template/nuevaSolicitud.html";
+    @Value("${rutaTemplate}")
+    private String RUTA_TEMPLATE;
+
+    private static String NUEVA_SOLICITUD_HTML = "/nuevaSolicitud.html";
     @Autowired
     public EmailService(JavaMailSender mailSender){
         this.mailSender = mailSender;
@@ -37,7 +40,7 @@ public class EmailService {
         StringBuilder contenidoHTML = new StringBuilder();
 
         try {
-            File archivo = new File(RUTA_TEMPLATE_NUEVA_CUENTA);
+            File archivo = new File(RUTA_TEMPLATE + NUEVA_SOLICITUD_HTML);
             FileReader lectorArchivo = new FileReader(archivo);
             BufferedReader lectorBuffer = new BufferedReader(lectorArchivo);
 

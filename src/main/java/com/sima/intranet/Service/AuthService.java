@@ -32,7 +32,7 @@ public class AuthService {
             throw new ParametroInvalidoException("Error: No puede enviar usuario o contraseña vacia.");
         }
 
-        if(signUpRequest.getId() == 0L){
+        if(signUpRequest.getId() == null || signUpRequest.getId() == 0L){
             if (userRepository.existsByNombreUsuario(signUpRequest.getUsername())) {
                 throw new ParametroInvalidoException("Error: Nombre de usuario no disponible.");
             }
@@ -42,7 +42,11 @@ public class AuthService {
                 throw new ParametroInvalidoException("Error: Nombre de usuario no disponible.");
             }
         }
-        Usuario user = userRepository.findById(signUpRequest.getId()).orElse(new Usuario());
+        Usuario user = new Usuario();
+        if(signUpRequest.getId() != null){
+            user = userRepository.findById(signUpRequest.getId()).orElse(new Usuario());
+        }
+
         if(Strings.isNotNullOrEmpty(signUpRequest.getEmail())){
             user.setCorreoUsuario(signUpRequest.getEmail());
         }

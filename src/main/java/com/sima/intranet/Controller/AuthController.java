@@ -4,6 +4,7 @@ import com.sima.intranet.Dto.LoginRequest;
 import com.sima.intranet.Dto.MessageResponse;
 import com.sima.intranet.Dto.NuevaCuentaDTO;
 import com.sima.intranet.Dto.SignupRequest;
+import com.sima.intranet.Entity.Role;
 import com.sima.intranet.Entity.Usuario;
 import com.sima.intranet.Enumarable.ERole;
 import com.sima.intranet.Exception.ParametroInvalidoException;
@@ -13,10 +14,13 @@ import com.sima.intranet.Seguridad.UserDetailsImpl;
 import com.sima.intranet.Seguridad.jwt.JwtUtils;
 import com.sima.intranet.Service.AuthService;
 import com.sima.intranet.Service.EmailService;
+import com.sima.intranet.Service.UsuarioServiceImpl;
+import com.sima.intranet.Util.Strings;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -36,11 +40,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    @Value("${masterKey}")
+    private String MASTER_KEY;
+
     @Autowired
     AuthenticationManager authenticationManager;
 
     @Autowired
-    UsuarioRepository userRepository;
+    UsuarioServiceImpl usuarioService;
 
     @Autowired
     RoleRepository roleRepository;
@@ -81,8 +88,21 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest ,  HttpServletRequest request) {
+        if(Strings.isNullOrEmpty(signUpRequest.getMasterKey()) || !signUpRequest.getMasterKey().equals(MASTER_KEY)){
+            if(jwtUtils.getJwtFromCookies(request) == null && !signUpRequest.getMasterKey().equals(MASTER_KEY)){
+                return ResponseEntity.badRequest().body(new MessageResponse("Usuario no autorizado."));
+            }
+            Optional<Usuario> usuario = usuarioService.getUsuarioActivo(request);
+            Optional<Role> roleModerator = Optional.empty();
+            if (usuario.isEmpty()) {
+                roleModerator = usuario.get().getRoles().stream().filter(e -> e.getName().equals(ERole.ROLE_MODERATOR)).findFirst();
+            }
+            if(!roleModerator.isPresent()){
+                return ResponseEntity.badRequest().body(new MessageResponse("Usuario no autorizado."));
+            }
+        }
+
         try {
             authService.registrarOActualizarUsuario(signUpRequest);
         }catch(ParametroInvalidoException e){
