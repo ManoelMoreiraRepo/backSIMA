@@ -16,6 +16,8 @@ public class Dia {
 
     private LocalDate fecha;
 
+    private Double horas;
+
     private EstadoDia estado;
     @ManyToOne
     @JsonIgnore

@@ -36,4 +36,12 @@ public class GlobalController {
     public ResponseEntity<MessageResponse> handleMailException(MailSendException ex){
         return ResponseEntity.internalServerError().body(new MessageResponse("No se pudo procesar la solicitud."));
     }
+
+    @ExceptionHandler(NullPointerException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<MessageResponse> handleMailException(NullPointerException ex){
+        return ResponseEntity.internalServerError().body(new MessageResponse("No se pudo procesar la solicitud."));
+    }
+
+
 }

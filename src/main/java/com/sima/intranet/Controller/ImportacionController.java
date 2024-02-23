@@ -1,5 +1,6 @@
 package com.sima.intranet.Controller;
 
+import com.sima.intranet.Dto.MessageResponse;
 import com.sima.intranet.Entity.LogImportacion;
 import com.sima.intranet.Entity.Usuario;
 import com.sima.intranet.Exception.ParametroInvalidoException;
@@ -41,15 +42,13 @@ public class ImportacionController {
     private LogImportacionRepository logImportacionRepository;
 
     @PostMapping("/archivo")
-    public ResponseEntity<String> handleCSVUpload(@RequestParam("file") MultipartFile file , HttpServletRequest request) {
+    public ResponseEntity<MessageResponse> handleCSVUpload(@RequestParam("file") MultipartFile file , HttpServletRequest request) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("No se pudo recibir el archivo.");
+            return ResponseEntity.badRequest().body(new MessageResponse("No se pudo recibir el archivo."));
         }
-
-
         try {
             String originalFileName = file.getOriginalFilename();
-            if(!originalFileName.endsWith(".xlsx")){
+            if(originalFileName == null || !originalFileName.endsWith(".xlsx")){
                 throw new ParametroInvalidoException("Solo esta permitida la importación de archivos xlsx.");
             }
 
@@ -67,9 +66,9 @@ public class ImportacionController {
 
             importador.procesarImportacion(String.valueOf(targetPath) , newFileName , usuario);
 
-            return ResponseEntity.ok(mensaje);
+            return ResponseEntity.ok().body(new MessageResponse(mensaje));
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("Error al cargar el archivo: " + e.getMessage());
+            return ResponseEntity.status(500).body(new MessageResponse("Error al cargar el archivo: " + e.getMessage()));
         }
     }
 

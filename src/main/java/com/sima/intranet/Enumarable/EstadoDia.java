@@ -13,7 +13,9 @@ public enum EstadoDia {
     ART("ART"),
     VACACIONES("VV"),
     AUSENTE(""),
-    LICENCIA_PERMANENTE("LP");
+    LICENCIA_PERMANENTE("LP"),
+
+    LICENCIA_MEDICA ("LXP");
 
     public String sigla;
 

@@ -5,6 +5,7 @@ import com.sima.intranet.Enumarable.*;
 import com.sima.intranet.Enumarable.Empresa;
 import com.sima.intranet.Interface.*;
 import com.sima.intranet.Repository.LogImportacionRepository;
+import com.sima.intranet.Util.Strings;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -136,6 +138,8 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 cabezera.add(getStringValorCelda(cell));
             }
 
+            cabezera = cabezera.stream().filter(Strings::isNotNullOrEmpty).toList();
+
             if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
                 mensaje = "Actualiación de FORMATO BEGERMAN iniciado.";
             } else if (cabezera.containsAll(FORMATO_SUELDO_NOMINA)) {
@@ -201,9 +205,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             for (Cell cell : sheet.getRow(0)) {
                 cabezera.add(getStringValorCelda(cell));
             }
-           // System.out.println(cabezera);
-
-
+            cabezera = cabezera.stream().filter(Strings::isNotNullOrEmpty).toList();
             if (FORMATO_BEJERMAN_NOMINA.containsAll(cabezera)) {
                 logger.info("Actualiacion de FORMATO BEGERMAN iniciada.");
                 insertarFormatoBejerman(sheet , logImportacion);
@@ -306,7 +308,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             indumentaria.setFamilia(getStringValorCelda(row.getCell(2)));
             indumentaria.setNombreIndumentaria(getStringValorCelda(row.getCell(4)));
             indumentaria.setTalle(getStringValorCelda(row.getCell(6)));
-            if(row.getCell(7)!=null){
+            if(row.getCell(7)!=null && row.getCell(7).getCellType().equals(CellType.NUMERIC)){
                 indumentaria.setCantidad(Double.valueOf(row.getCell(7).getNumericCellValue()).longValue());
             }
             indumentaria.setFechaProximaEntregaIndumentaria(getLocalDateFromExcel(row.getCell(9) , logImportacion , row.getRowNum()));
@@ -606,9 +608,11 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                 continue;
             }
             Integer cantidadDias = 0;
+            LocalDate fechaFinal = fechaInicio.plusMonths(1);
+            Long cantidadIteraciones = ChronoUnit.DAYS.between(fechaInicio , fechaFinal);
             List<Dia> diasIngresados = new ArrayList<>();
             for (Cell cell : row) {
-                if(cell.getColumnIndex()>2 && cell.getColumnIndex()<33){
+                if(cell.getColumnIndex()>=3 && cell.getColumnIndex()<= (cantidadIteraciones+3)){
                     String estadoString = getStringValorCelda(cell);
                     EstadoDia estado =  EstadoDia.getEstadoDiaImportacion(estadoString);
                     LocalDate fechaAplica = fechaInicio.plusDays(cantidadDias);
@@ -631,6 +635,19 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     cantidadDias++;
                 }
             }
+            int indiceDias = 3 + cantidadIteraciones.intValue();
+            int indiceHoras = indiceDias + 1;
+            Double horasPorDIa = 8.0; // Por defecto.
+
+            Cell celdaDias = row.getCell(indiceDias);
+            Cell celdaHoras = row.getCell(indiceHoras);
+            if(celdaDias != null && celdaHoras != null && celdaDias.getCellType().equals(CellType.NUMERIC) && celdaHoras.getCellType().equals(CellType.NUMERIC)){
+                Double dias = celdaDias.getNumericCellValue();
+                Double horas = celdaHoras.getNumericCellValue();
+                horasPorDIa = (horas/dias);
+            }
+            final Double horasPorDiaFInal = horasPorDIa;
+            diasIngresados.forEach(e ->e.setHoras(horasPorDiaFInal));
             diaService.saveAll(diasIngresados);
         }
 
