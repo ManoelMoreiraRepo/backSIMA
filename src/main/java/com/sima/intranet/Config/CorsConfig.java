@@ -15,6 +15,9 @@ public class CorsConfig {
     @Value("${cors.origin}")
     private String allowedOrigins;
 
+    @Value("${cors.origin2}")
+    private String allowedOrigins2;
+
     @Value("${cors.maxAge}")
     private long maxAge;
 
@@ -28,6 +31,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(allowCredentials);
         config.addAllowedOrigin(allowedOrigins);
+        config.addAllowedOrigin(allowedOrigins2);
        // config.addAllowedOrigin("https://5ggqz0cr-4200.brs.devtunnels.ms/");
        // config.setAllowedOriginPatterns(List.of(allowedOrigins));
         config.setMaxAge(maxAge);

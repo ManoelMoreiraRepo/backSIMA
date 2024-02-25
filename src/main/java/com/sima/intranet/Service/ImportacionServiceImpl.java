@@ -611,6 +611,19 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             LocalDate fechaFinal = fechaInicio.plusMonths(1);
             Long cantidadIteraciones = ChronoUnit.DAYS.between(fechaInicio , fechaFinal);
             List<Dia> diasIngresados = new ArrayList<>();
+
+            int indiceDias = 3 + cantidadIteraciones.intValue();
+            int indiceHoras = indiceDias + 1;
+            Double horasPorDIa = 8.0; // Por defecto.
+
+            Cell celdaDias = row.getCell(indiceDias);
+            Cell celdaHoras = row.getCell(indiceHoras);
+            if(celdaDias != null && celdaHoras != null && celdaDias.getCellType().equals(CellType.NUMERIC) && celdaHoras.getCellType().equals(CellType.NUMERIC)){
+                Double dias = celdaDias.getNumericCellValue();
+                Double horas = celdaHoras.getNumericCellValue();
+                horasPorDIa = (horas/dias);
+            }
+
             for (Cell cell : row) {
                 if(cell.getColumnIndex()>=3 && cell.getColumnIndex()<= (cantidadIteraciones+3)){
                     String estadoString = getStringValorCelda(cell);
@@ -621,6 +634,7 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                         dia.setEmpleado(empleadoOpt.get());
                         dia.setFecha(fechaAplica);
                         dia.setEstado(estado);
+                        dia.setHoras(estado.isDiaTrabajado() ? horasPorDIa : 0);
                         diasIngresados.add(dia);
                     }else{
                         Optional<Dia> registroViejo = diaService.buscarPorFechaYEmpleado(fechaAplica , empleadoOpt.get());
@@ -635,19 +649,6 @@ public class ImportacionServiceImpl implements ImportacionInterface {
                     cantidadDias++;
                 }
             }
-            int indiceDias = 3 + cantidadIteraciones.intValue();
-            int indiceHoras = indiceDias + 1;
-            Double horasPorDIa = 8.0; // Por defecto.
-
-            Cell celdaDias = row.getCell(indiceDias);
-            Cell celdaHoras = row.getCell(indiceHoras);
-            if(celdaDias != null && celdaHoras != null && celdaDias.getCellType().equals(CellType.NUMERIC) && celdaHoras.getCellType().equals(CellType.NUMERIC)){
-                Double dias = celdaDias.getNumericCellValue();
-                Double horas = celdaHoras.getNumericCellValue();
-                horasPorDIa = (horas/dias);
-            }
-            final Double horasPorDiaFInal = horasPorDIa;
-            diasIngresados.forEach(e ->e.setHoras(horasPorDiaFInal));
             diaService.saveAll(diasIngresados);
         }
 
