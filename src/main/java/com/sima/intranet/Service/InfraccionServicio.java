@@ -103,6 +103,7 @@ public class InfraccionServicio implements InfraccionInterface {
         cond.add(builder.equal(root.get("estado") , EstadoMovil.ACTIVO));
         query.where(cond.toArray(Predicate[]::new));
         query.groupBy(root.get("gerencia"));
+        query.orderBy(builder.asc(root.get("gerencia")));
         Selection<Long> cantidad = builder.count(root.get("id"));
         query.select(cantidad);
         return entityManager.createQuery(query).getResultList();

@@ -10,6 +10,6 @@ import java.util.Optional;
 
 public interface InfraccionRepository extends JpaRepository<Infraccion,Long> {
     Optional<Infraccion> findByNumero(String numero);
-    @Query("SELECT i FROM Infraccion i INNER JOIN Movil m ON i.movil = m WHERE m.gerencia =:gerencia")
+    @Query("SELECT i FROM Infraccion i INNER JOIN Movil m ON i.movil = m WHERE m.gerencia =:gerencia ORDER BY m.gerencia")
     List<Infraccion> getInfraccionesPorGerencia(Gerencia gerencia);
 }
