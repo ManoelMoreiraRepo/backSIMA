@@ -7,6 +7,7 @@ import com.sima.intranet.Interface.*;
 import com.sima.intranet.Repository.LogImportacionRepository;
 import com.sima.intranet.Util.Strings;
 import jakarta.transaction.Transactional;
+import org.hibernate.type.descriptor.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -55,6 +58,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
 
     @Autowired
     private CapacitacionInterface capacitacionService;
+
+    @Autowired
+    private ConsumoService consumoService;
 
     public static final List<String> FORMATO_BEJERMAN_NOMINA = List.of(
             "gerencia","empresa","txtLegNum", "txtApeNom", "per_celular", "per_dom", "per_piso", "per_dpto", "per_torre", "per_sector",
@@ -124,6 +130,15 @@ public class ImportacionServiceImpl implements ImportacionInterface {
     public static final List<String> FORMATO_ESTANDAR_INDUMENTARIA= List.of("DNI", "APELLIDO_NOMBRE", "FAMILIA", "CODIGO PRODUCTO", "PRODUCTO", "MODELO", "TALLE", "CANTIDAD", "FECHA_ULTIMA", "FECHA_PROXIMA");
 
 
+    public static final List<String> FORMATO_CONSUMOS_COMBUSTIBLES = List.of(
+            "FECHA",
+            "IDENTIFICACION TARJETA",
+            "PRODUCTO",
+            "LITROS UNIDADES",
+            "IMP TOT PVP ESTABLECIMIENTO",
+            "GERENCIA"
+    );
+
     public String reconocerFormatoImplementado(String ruta, String nombreArchivo, Usuario usuario) {
         String mensaje = "";
         try {
@@ -161,10 +176,12 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_BASE_GPS.containsAll(cabezera)){
                 mensaje = "Actualiación de FORMATO INFRACCIONES iniciado.";
             }else if(FORMATO_CREDENCIALES_CABA_PROV.containsAll(cabezera)){
-                mensaje = "Actualiacion de FORMATO CREDECINALES CABA PROV iniciado.";
+                mensaje = "Actualiación de FORMATO CREDECINALES CABA PROV iniciado.";
             }else if(FORMATO_ESTANDAR_INDUMENTARIA.containsAll(cabezera)){
-                mensaje = "Actualiacion de FORMATO ESTANDAR INDUMENTARIA iniciado.";
-            }else{
+                mensaje = "Actualiación de FORMATO ESTANDAR INDUMENTARIA iniciado.";
+            }else if (FORMATO_CONSUMOS_COMBUSTIBLES.containsAll(cabezera)) {
+                mensaje = "Actualiación de FORMATO CONSUMO COMBUSTIBLES iniciado.";
+            } else {
                 mensaje = "Formato no implementado.";
             }
             workbook.close();
@@ -242,6 +259,9 @@ public class ImportacionServiceImpl implements ImportacionInterface {
             }else if(FORMATO_ESTANDAR_INDUMENTARIA.containsAll(cabezera)){
                 logger.info("Actualiacion de FORMATO ESTANDAR INDUMENTARIA.");
                 insertarFormatoEstandarIndumentaria(sheet , logImportacion);
+            }else if (FORMATO_CONSUMOS_COMBUSTIBLES.containsAll(cabezera)) {
+                logger.info("Actualiacion de  FORMATO CONSUMO COMBUSTIBLES.");
+                insertarFormatoConsumoCombustibles(sheet , logImportacion);
             }else{
                 //cabezera.removeIf((dato) -> FORMATO_OFERTAS_EMPLEO.contains(dato));
                 //logger.info("El formato de este excel no esta implementado.");
@@ -263,6 +283,48 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         }
 
     }
+
+    private void insertarFormatoConsumoCombustibles(Sheet sheet, LogImportacion logImportacion) {
+        logImportacion.addMensaje("INICIO  FORMATO CONSUMO COMBUSTIBLES");
+        List<Consumo> consumoList = new ArrayList<>();
+        for(Row row :sheet){
+            if(row.getRowNum() == 0){
+                continue;
+            }
+            String dominio = getStringValorCelda(row.getCell(1));
+            if(dominio == null){
+                logImportacion.addMensaje("Dominio no encontrado. row nro : "+ row.getRowNum());
+                logger.error("Dominio no encontrado. row nro : "+ row.getRowNum());
+                continue;
+            }
+            Optional<Movil> movil = movilService.getByDominio(dominio);
+            Gerencia gerencia = Gerencia.getGerencia(row.getCell(5));
+            if(movil.isEmpty()){
+                Movil nuevoMovil = Movil.builder().gerencia(gerencia).dominio(dominio).estado(EstadoMovil.ACTIVO).build();
+                movilService.save(nuevoMovil);
+                movil = Optional.of(nuevoMovil);
+            }
+            LocalDateTime fecha = null;
+            try{
+                fecha = getLocalDateTimeFromExcel(getStringValorCelda(row.getCell(0)));
+            }catch(DateTimeParseException e){
+                logger.error(e.getMessage());
+            }
+            if(fecha == null){
+                logImportacion.addMensaje("Fecha invalida. row nro : "+ row.getRowNum());
+                logger.error("Fecha invalida. row nro : "+ row.getRowNum());
+                continue;
+            }
+            Consumo consumo = consumoService.findByMovilAndFecha(movil.get() , fecha).orElse(Consumo.builder().movil(movil.get()).fecha(fecha).gerencia(gerencia).build()  );
+            consumo.setProducto(getStringValorCelda(row.getCell(2)));
+            consumo.setLitros(getBigDecimalFromExcel(row.getCell(3)));
+            consumo.setImporte(getBigDecimalFromExcel(row.getCell(4)));
+            consumoList.add(consumo);
+        }
+        consumoService.saveAll(consumoList);
+    }
+
+
 
     private void insertarFormatoEstandarIndumentaria(Sheet sheet, LogImportacion logImportacion) {
         logImportacion.addMensaje("INICIO FORMATO ESTANDAR INDUMENTARIA");
@@ -1219,5 +1281,26 @@ public class ImportacionServiceImpl implements ImportacionInterface {
         return DateUtil.getJavaDate(dateCellValue).toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
+    }
+
+    private LocalDateTime getLocalDateTimeFromExcel(String dato) {
+        if(dato == null){
+            return null;
+        }
+        String patron = "dd/MM/yyyy HH:mm:ss";
+        DateTimeFormatter formateador = DateTimeFormatter.ofPattern(patron);
+        return  LocalDateTime.parse(normalizarFormatoFecha(dato), formateador);
+    }
+
+    private String normalizarFormatoFecha(String fechaHora) {
+        String[] partes = fechaHora.split(" ");
+        String[] horaMinutosSegundos = partes[1].split(":");
+        for (int i = 0; i < horaMinutosSegundos.length; i++) {
+            if (horaMinutosSegundos[i].length() == 1) {
+                horaMinutosSegundos[i] = "0" + horaMinutosSegundos[i];
+            }
+        }
+        partes[1] = String.join(":", horaMinutosSegundos);
+        return String.join(" ", partes);
     }
 }
